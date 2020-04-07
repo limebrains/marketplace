@@ -188,6 +188,12 @@ class ProductVariant(CountableDjangoObjectType):
             "indicates that the default product price is used."
         ),
     )
+    vendor = graphene.Int(
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
+    )
     pricing = graphene.Field(
         VariantPricingInfo,
         description=(

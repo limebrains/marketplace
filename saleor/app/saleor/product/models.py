@@ -437,7 +437,7 @@ class ProductVariant(ModelWithMetadata):
         measurement=Weight, unit_choices=WeightUnits.CHOICES, blank=True, null=True
     )
 
-    vendors = models.ManyToManyField(Vendor, through='ProductVariantVendorListing', related_name='products')
+    vendors = models.ManyToManyField(Vendor, through='ProductVariantVendorListing', related_name='products', blank=True)
 
     objects = ProductVariantQueryset.as_manager()
     translated = TranslationProxy()
