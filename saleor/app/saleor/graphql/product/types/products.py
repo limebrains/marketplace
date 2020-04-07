@@ -10,6 +10,7 @@ from graphql.error import GraphQLError
 
 from ....core.permissions import ProductPermissions
 from ....product import models
+from ....product.models import ProductVariantVendorListing, ProductVariant
 from ....product.templatetags.product_images import (
     get_product_image_thumbnail,
     get_thumbnail,
@@ -20,6 +21,7 @@ from ....product.utils.availability import (
     get_variant_availability,
 )
 from ....product.utils.costs import get_margin_for_variant, get_product_costs_data
+from ....vendor.models import Vendor
 from ....warehouse import models as stock_models
 from ....warehouse.availability import (
     get_available_quantity,
@@ -159,6 +161,20 @@ class ProductPricingInfo(BasePricingInfo):
     class Meta:
         description = "Represents availability of a product in the storefront."
 
+@key(fields="id")
+class ProductVariantVendorListing(CountableDjangoObjectType):
+    product = graphene.Int(
+        required=False,
+        description='Test variant'
+    )
+    vendor = graphene.Int(
+        required=False,
+        description='Test vendor'
+    )
+
+    class Meta:
+        description = "Represents vendor listings of specific variants."
+        model = ProductVariantVendorListing
 
 @key(fields="id")
 class ProductVariant(CountableDjangoObjectType):
