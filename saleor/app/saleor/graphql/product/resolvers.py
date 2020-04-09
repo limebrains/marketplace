@@ -196,6 +196,18 @@ def resolve_product_variants(info, ids=None):
     return gql_optimizer.query(qs, info)
 
 
+def resolve_product_variants_vendor_listing(info, ids=None):
+    user = info.context.user
+    # visible_products = models.Product.objects.visible_to_user(user).values_list(
+    #     "pk", flat=True
+    # )
+    qs = models.ProductVariantVendorListing.objects.all()
+    if ids:
+        db_ids = [get_database_id(info, node_id, "ProductVariantVendorListing") for node_id in ids]
+        qs = qs.filter(pk__in=db_ids)
+    return gql_optimizer.query(qs, info)
+
+
 def resolve_report_product_sales(period):
     qs = models.ProductVariant.objects.prefetch_related(
         "product", "product__images", "order_lines__order"

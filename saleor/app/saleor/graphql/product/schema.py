@@ -1,5 +1,6 @@
 import graphene
 
+from .types.products import ProductVariantVendorListing
 from ...core.permissions import ProductPermissions
 from ..core.enums import ReportingPeriod
 from ..core.fields import FilterInputConnectionField, PrefetchingConnectionField
@@ -34,6 +35,7 @@ from .filters import (
     CollectionFilterInput,
     ProductFilterInput,
     ProductTypeFilterInput,
+    ProductVariantVendorListingTypeFilterInput
 )
 from .mutations.attributes import (
     AttributeAssign,
@@ -112,6 +114,7 @@ from .resolvers import (
     resolve_product_variants,
     resolve_products,
     resolve_report_product_sales,
+    resolve_product_variants_vendor_listing,
 )
 from .sorters import (
     AttributeSortingInput,
@@ -235,6 +238,13 @@ class ProductQueries(graphene.ObjectType):
         ),
         description="List of product variants.",
     )
+    product_variants_vendor_listing = PrefetchingConnectionField(
+        ProductVariantVendorListing,
+        filter=ProductVariantVendorListingTypeFilterInput(
+            description="Filtering options for product types."
+        ),
+        description="List of product variants.",
+    )
     report_product_sales = PrefetchingConnectionField(
         ProductVariant,
         period=graphene.Argument(
@@ -286,6 +296,9 @@ class ProductQueries(graphene.ObjectType):
 
     def resolve_product_variants(self, info, ids=None, **_kwargs):
         return resolve_product_variants(info, ids)
+
+    def resolve_product_variants_vendor_listing(self, info, ids=None, **_kwargs):
+        return resolve_product_variants_vendor_listing(info, ids)
 
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
     def resolve_report_product_sales(self, *_args, period, **_kwargs):

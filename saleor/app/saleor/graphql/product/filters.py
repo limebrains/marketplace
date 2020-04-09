@@ -14,7 +14,7 @@ from ...product.models import (
     Product,
     ProductType,
     ProductVariant,
-)
+    ProductVariantVendorListing)
 from ...search.backends import picker
 from ...warehouse.models import Stock
 from ..core.filters import EnumFilter, ListObjectTypeFilter, ObjectTypeFilter
@@ -373,6 +373,16 @@ class ProductTypeFilter(django_filters.FilterSet):
         fields = ["search", "configurable", "product_type"]
 
 
+class ProductVariantVendorListingType(django_filters.FilterSet):
+    search = django_filters.CharFilter(method=filter_fields_containing_value("vendor"))
+
+    ids = GlobalIDMultipleChoiceFilter(field_name="id")
+
+    class Meta:
+        model = ProductVariantVendorListing
+        fields = ["vendor", "product"]
+
+
 class AttributeFilter(django_filters.FilterSet):
     # Search by attribute name and slug
     search = django_filters.CharFilter(
@@ -413,6 +423,11 @@ class CategoryFilterInput(FilterInputObjectType):
 class ProductTypeFilterInput(FilterInputObjectType):
     class Meta:
         filterset_class = ProductTypeFilter
+
+
+class ProductVariantVendorListingTypeFilterInput(FilterInputObjectType):
+    class Meta:
+        filterset_class = ProductVariantVendorListingType
 
 
 class AttributeFilterInput(FilterInputObjectType):
