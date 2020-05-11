@@ -204,7 +204,8 @@ class ProductVariant(CountableDjangoObjectType):
             "indicates that the default product price is used."
         ),
     )
-    vendor = graphene.Int(
+    vendor = graphene.List(
+        of_type=graphene.String,
         required=False,
         description=(
             "Vendor id of specific item."
@@ -325,6 +326,10 @@ class ProductVariant(CountableDjangoObjectType):
     @staticmethod
     def resolve_price(root: models.ProductVariant, *_args):
         return root.base_price
+
+    @staticmethod
+    def resolve_vendor(root: models.ProductVariant, *_args):
+        return root.vendors.all().values_list('name', flat=True)
 
     @staticmethod
     @gql_optimizer.resolver_hints(
@@ -458,6 +463,13 @@ class Product(CountableDjangoObjectType):
             lambda: Collection, description="List of collections for the product."
         ),
         model_field="collections",
+    )
+    vendors = graphene.List(
+        of_type=graphene.String,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
     )
     translation = TranslationField(ProductTranslation, type_name="product")
 
@@ -598,6 +610,10 @@ class Product(CountableDjangoObjectType):
         return root.variants.all()
 
     @staticmethod
+    def resolve_vendors(root: models.Product, *_args, **_kwargs):
+        return root.variants.exclude(vendors__name__isnull=True).values_list('vendors__name', flat=True)
+
+    @staticmethod
     def resolve_collections(root: models.Product, *_args):
         return root.collections.all()
 
@@ -684,6 +700,13 @@ class ProductType(CountableDjangoObjectType):
     )
     def resolve_variant_attributes(root: models.ProductType, *_args, **_kwargs):
         return root.variant_attributes.variant_attributes_sorted().all()
+
+    @staticmethod
+    def resolve_vendors(root: models.ProductType, info, **_kwargs):
+        if hasattr(root, "prefetched_products"):
+            return root.prefetched_products  # type: ignore
+        qs = root.products.visible_to_user(info.context.user)
+        return gql_optimizer.query(qs, info)
 
     @staticmethod
     def resolve_products(root: models.ProductType, info, **_kwargs):
