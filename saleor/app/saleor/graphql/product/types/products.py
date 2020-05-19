@@ -204,7 +204,7 @@ class ProductVariant(CountableDjangoObjectType):
             "indicates that the default product price is used."
         ),
     )
-    vendor = graphene.List(
+    vendors = graphene.List(
         of_type=graphene.String,
         required=False,
         description=(
@@ -328,7 +328,7 @@ class ProductVariant(CountableDjangoObjectType):
         return root.base_price
 
     @staticmethod
-    def resolve_vendor(root: models.ProductVariant, *_args):
+    def resolve_vendors(root: models.ProductVariant, *_args):
         return root.vendors.all().values_list('name', flat=True)
 
     @staticmethod
