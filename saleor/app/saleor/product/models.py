@@ -500,7 +500,7 @@ class ProductVariant(ModelWithMetadata):
 class ProductVariantVendorListing(models.Model):
     price = MoneyField(amount_field="cost_price_amount", currency_field="currency")
     product = models.ForeignKey(ProductVariant, related_name='listing', on_delete=models.DO_NOTHING)
-    vendor = models.ForeignKey(Vendor, related_name='listing', on_delete=models.DO_NOTHING)
+    vendor = models.ForeignKey(Vendor, related_name='listing', on_delete=models.DO_NOTHING, null=True)
 
 
 class ProductVariantTranslation(models.Model):

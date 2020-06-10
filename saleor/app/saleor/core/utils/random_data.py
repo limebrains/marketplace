@@ -137,7 +137,7 @@ COLLECTION_IMAGES = {1: "summer.jpg", 2: "clothing.jpg"}
 def get_weight(weight):
     if not weight:
         return zero_weight()
-    value, unit = weight.split()
+    value, unit = weight.split(' ')
     return Weight(**{unit: value})
 
 
