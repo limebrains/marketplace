@@ -14,6 +14,7 @@ from django_prices.models import MoneyField, TaxedMoneyField
 from measurement.measures import Weight
 from prices import Money
 
+from ..vendor.models import Vendor
 from ..account.models import Address
 from ..core.models import ModelWithMetadata
 from ..core.permissions import OrderPermissions
@@ -150,7 +151,11 @@ class Order(ModelWithMetadata):
         gross_amount_field="total_gross_amount",
         currency_field="currency",
     )
-
+    vendors = models.ManyToManyField(
+        Vendor,
+        verbose_name='orders',
+        blank=True,
+    )
     voucher = models.ForeignKey(
         Voucher, blank=True, null=True, related_name="+", on_delete=models.SET_NULL
     )

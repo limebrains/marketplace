@@ -5,6 +5,7 @@ from graphene import relay
 from graphene_federation import key
 from graphql_jwt.exceptions import PermissionDenied
 
+from ..vendor.types import Vendor
 from ...account import models
 from ...checkout.utils import get_user_checkout
 from ...core.permissions import AccountPermissions, OrderPermissions, get_permissions
@@ -270,6 +271,9 @@ class User(CountableDjangoObjectType):
     permissions = graphene.List(
         PermissionDisplay, description="List of user's permissions."
     )
+    vendor = graphene.Field(
+        Vendor, description="Returns vendor assinged to the account.", required=False
+    )
     avatar = graphene.Field(Image, size=graphene.Int(description="Size of the avatar."))
     events = gql_optimizer.field(
         graphene.List(
@@ -343,6 +347,10 @@ class User(CountableDjangoObjectType):
         if viewer.has_perm(OrderPermissions.MANAGE_ORDERS):
             return root.orders.all()
         return root.orders.confirmed()
+
+    @staticmethod
+    def resolve_vendor(root: models.User, info, **_kwargs):
+        return root.vendor if hasattr(root, 'vendor') else None
 
     @staticmethod
     def resolve_avatar(root: models.User, info, size=None, **_kwargs):

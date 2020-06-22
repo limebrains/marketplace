@@ -97,24 +97,11 @@ def resolve_attribute_list(
 
         # Retrieve the instance's associated data
         attr_data = attr_instance_data.filter(**assigned_attribute_instance_filters)
+        attr_data = attr_data.first()
 
-        if not user.is_staff:
-            user_vendor = Vendor.objects.find(admin_account=user)
-            if not user_vendor:
-                values = empty_qs
-            else:
-                attr_data = attr_data.filter(product__variants__vendors__id=user_vendor)
-                attr_data = attr_data.first()
-
-                # Return the instance's attribute values if the assignment was found,
-                # otherwise it sets the values as an empty QuerySet
-                values = attr_data.values.all() if attr_data is not None else empty_qs
-        else:
-            attr_data = attr_data.first()
-
-            # Return the instance's attribute values if the assignment was found,
-            # otherwise it sets the values as an empty QuerySet
-            values = attr_data.values.all() if attr_data is not None else empty_qs
+        # Return the instance's attribute values if the assignment was found,
+        # otherwise it sets the values as an empty QuerySet
+        values = attr_data.values.all() if attr_data is not None else empty_qs
         resolved_attributes.append(
             SelectedAttribute(attribute=attr_data_rel.attribute, values=values)
         )

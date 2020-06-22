@@ -85,6 +85,8 @@ def resolve_categories(info, query, level=None, sort_by=None, **_kwargs):
 def resolve_collections(info, query, sort_by=None, **_kwargs):
     user = info.context.user
     qs = models.Collection.objects.visible_to_user(user)
+    if not user.is_superuser:
+        qs = qs.filter(variants__vendors__admin_account=user)
     qs = filter_by_query_param(qs, query, COLLECTION_SEARCH_FIELDS)
     qs = sort_queryset(qs, sort_by, CollectionSortField)
     return gql_optimizer.query(qs, info)
@@ -147,6 +149,8 @@ def resolve_products(
 
     user = get_user_or_service_account_from_context(info.context)
     qs = models.Product.objects.visible_to_user(user)
+    if not user.is_superuser:
+        qs = qs.filter(variants__vendors__admin_account=user)
     qs = sort_products(qs, sort_by)
 
     if query:
