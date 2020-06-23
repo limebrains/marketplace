@@ -606,7 +606,10 @@ class Product(CountableDjangoObjectType):
         return root.images.all()
 
     @staticmethod
-    def resolve_variants(root: models.Product, *_args, **_kwargs):
+    def resolve_variants(root: models.Product, info, *_args, **_kwargs):
+        user = info.context.user
+        if not user.is_superuser:
+            return root.variants.filter(vendors__admin_account=user)
         return root.variants.all()
 
     @staticmethod

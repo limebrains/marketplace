@@ -1,3 +1,4 @@
+from django.db.models.query_utils import Q
 from typing import TYPE_CHECKING
 
 import graphene_django_optimizer as gql_optimizer
@@ -56,6 +57,7 @@ def resolve_attributes(
 ):
     qs = qs or models.Attribute.objects.get_visible_to_user(info.context.user)
     qs = filter_by_query_param(qs, query, ATTRIBUTES_SEARCH_FIELDS)
+    print('attributes', qs.values())
 
     if in_category:
         qs = filter_attributes_by_product_types(qs, "in_category", in_category)
@@ -73,7 +75,10 @@ def resolve_attributes(
 
 
 def resolve_categories(info, query, level=None, sort_by=None, **_kwargs):
+    user = info.context.user
     qs = models.Category.objects.prefetch_related("children")
+    if not user.is_superuser:
+        qs = qs.filter(vendor__admin_account=user)
     if level is not None:
         qs = qs.filter(level=level)
     qs = filter_by_query_param(qs, query, CATEGORY_SEARCH_FIELDS)
@@ -86,7 +91,7 @@ def resolve_collections(info, query, sort_by=None, **_kwargs):
     user = info.context.user
     qs = models.Collection.objects.visible_to_user(user)
     if not user.is_superuser:
-        qs = qs.filter(variants__vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     qs = filter_by_query_param(qs, query, COLLECTION_SEARCH_FIELDS)
     qs = sort_queryset(qs, sort_by, CollectionSortField)
     return gql_optimizer.query(qs, info)
@@ -178,6 +183,29 @@ def resolve_products(
     return gql_optimizer.query(qs, info)
 
 
+def resolve_autocomplete_products(
+    info,
+    attributes=None,
+    sort_by=None,
+    query=None,
+    **_kwargs,
+):
+
+    user = get_user_or_service_account_from_context(info.context)
+    qs = models.Product.objects.visible_to_user(user)
+    qs = sort_products(qs, sort_by)
+
+    if query:
+        search = picker.pick_backend()
+        qs &= search(query)
+
+    if attributes:
+        qs = filter_products_by_attributes(qs, attributes)
+    qs = qs.distinct()
+
+    return gql_optimizer.query(qs, info)
+
+
 def resolve_product_types(info, query, sort_by=None, **_kwargs):
     qs = models.ProductType.objects.all()
     qs = filter_by_query_param(qs, query, PRODUCT_TYPE_SEARCH_FIELDS)
@@ -194,6 +222,8 @@ def resolve_product_variants(info, ids=None):
         "pk", flat=True
     )
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
+    if not user.is_superuser:
+        qs = qs.filter(vendors__admin_account=user)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariant") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)
@@ -206,6 +236,8 @@ def resolve_product_variants_vendor_listing(info, ids=None):
     #     "pk", flat=True
     # )
     qs = models.ProductVariantVendorListing.objects.all()
+    if not user.is_superuser:
+        qs = qs.filter(vendors__admin_account=user)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariantVendorListing") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)

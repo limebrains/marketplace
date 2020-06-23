@@ -58,6 +58,13 @@ class Category(MPTTModel, ModelWithMetadata, SeoModel):
         upload_to="category-backgrounds", blank=True, null=True
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
+    vendor = models.ForeignKey(
+        Vendor,
+        verbose_name='categories',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
+    )
 
     objects = models.Manager()
     tree = TreeManager()
@@ -891,6 +898,13 @@ class Collection(SeoModel, ModelWithMetadata, PublishableModel):
     )
     background_image = VersatileImageField(
         upload_to="collection-backgrounds", blank=True, null=True
+    )
+    vendor = models.ForeignKey(
+        Vendor,
+        verbose_name='collections',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
     )
     background_image_alt = models.CharField(max_length=128, blank=True)
     description = models.TextField(blank=True)

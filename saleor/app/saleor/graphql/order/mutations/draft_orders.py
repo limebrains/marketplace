@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from graphene.types import InputObjectType
 
 from ....account.models import User
+from ....vendor.models import Vendor
 from ....core.exceptions import InsufficientStock
 from ....core.permissions import OrderPermissions
 from ....core.taxes import zero_taxed_money
@@ -164,8 +165,11 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
         # Create draft created event if the instance is from scratch
         if not created:
             events.draft_order_created_event(order=instance, user=info.context.user)
-
-        instance.save(update_fields=["billing_address", "shipping_address"])
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            instance.vendors = vendor
+        instance.save(update_fields=["billing_address", "shipping_address", "vendors"])
 
     @classmethod
     def _refresh_lines_unit_price(cls, info, instance, cleaned_input, new_instance):

@@ -12,6 +12,7 @@ from graphql_relay import from_global_id
 
 from ....core.permissions import ProductPermissions
 from ....product import models
+from ....vendor.models import Vendor
 from ....product.error_codes import ProductErrorCode
 from ....product.tasks import (
     update_product_minimal_variant_price_task,
@@ -112,6 +113,11 @@ class CategoryCreate(ModelMutation):
 
     @classmethod
     def save(cls, info, instance, cleaned_input):
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            instance.vendor = vendor
+
         instance.save()
         if cleaned_input.get("background_image"):
             create_category_background_image_thumbnails.delay(instance.pk)
@@ -215,6 +221,10 @@ class CollectionCreate(ModelMutation):
 
     @classmethod
     def save(cls, info, instance, cleaned_input):
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            instance.vendor = vendor
         instance.save()
         if cleaned_input.get("background_image"):
             create_collection_background_image_thumbnails.delay(instance.pk)

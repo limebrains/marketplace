@@ -115,7 +115,7 @@ from .resolvers import (
     resolve_products,
     resolve_report_product_sales,
     resolve_product_variants_vendor_listing,
-)
+    resolve_autocomplete_products)
 from .sorters import (
     AttributeSortingInput,
     CategorySortingInput,
@@ -209,6 +209,12 @@ class ProductQueries(graphene.ObjectType):
         ),
         description="List of the shop's products.",
     )
+    autocomplete_products = FilterInputConnectionField(
+        Product,
+        filter=ProductFilterInput(description="Filtering options for products."),
+        sort_by=ProductOrder(description="Sort products."),
+        description="List of the shop's products.",
+    )
     product_type = graphene.Field(
         ProductType,
         id=graphene.Argument(
@@ -284,6 +290,9 @@ class ProductQueries(graphene.ObjectType):
 
     def resolve_products(self, info, **kwargs):
         return resolve_products(info, **kwargs)
+
+    def resolve_autocomplete_products(self, info, **kwargs):
+        return resolve_autocomplete_products(info, **kwargs)
 
     def resolve_product_type(self, info, id):
         return graphene.Node.get_node_from_global_id(info, id, ProductType)

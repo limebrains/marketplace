@@ -151,10 +151,12 @@ class Order(ModelWithMetadata):
         gross_amount_field="total_gross_amount",
         currency_field="currency",
     )
-    vendors = models.ManyToManyField(
+    vendors = models.ForeignKey(
         Vendor,
         verbose_name='orders',
         blank=True,
+        null=True,
+        on_delete=models.SET_NULL
     )
     voucher = models.ForeignKey(
         Voucher, blank=True, null=True, related_name="+", on_delete=models.SET_NULL

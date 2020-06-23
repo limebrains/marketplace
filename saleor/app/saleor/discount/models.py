@@ -10,6 +10,7 @@ from django_prices.models import MoneyField
 from django_prices.templatetags.prices import amount
 from prices import Money, fixed_discount, percentage_discount
 
+from ..vendor.models import Vendor
 from ..core.permissions import DiscountPermissions
 from ..core.utils.translations import TranslationProxy
 from . import DiscountValueType, VoucherType
@@ -58,6 +59,13 @@ class Voucher(models.Model):
     # individually to every item
     apply_once_per_order = models.BooleanField(default=False)
     apply_once_per_customer = models.BooleanField(default=False)
+    vendor = models.ForeignKey(
+        Vendor,
+        verbose_name='vouchers',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
+    )
 
     discount_value_type = models.CharField(
         max_length=10,
@@ -199,6 +207,13 @@ class Sale(models.Model):
         max_digits=settings.DEFAULT_MAX_DIGITS,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES,
         default=0,
+    )
+    vendor = models.ForeignKey(
+        Vendor,
+        verbose_name='sales',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL
     )
     products = models.ManyToManyField("product.Product", blank=True)
     categories = models.ManyToManyField("product.Category", blank=True)

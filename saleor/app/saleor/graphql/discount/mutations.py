@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from ...core.permissions import DiscountPermissions
 from ...core.utils.promo_code import generate_promo_code, is_available_promo_code
 from ...discount import models
+from ...vendor.models import Vendor
 from ...discount.error_codes import DiscountErrorCode
 from ...product.tasks import (
     update_products_minimal_variant_prices_of_catalogues_task,
@@ -164,6 +165,14 @@ class VoucherCreate(ModelMutation):
             cleaned_input["min_spent_amount"] = min_spent_amount
         return cleaned_input
 
+    @classmethod
+    def save(cls, info, instance, cleaned_input):
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            instance.vendor = vendor
+        instance.save()
+
 
 class VoucherUpdate(VoucherCreate):
     class Arguments:
@@ -286,6 +295,14 @@ class SaleCreate(SaleUpdateMinimalVariantPriceMixin, ModelMutation):
         permissions = (DiscountPermissions.MANAGE_DISCOUNTS,)
         error_type_class = DiscountError
         error_type_field = "discount_errors"
+
+    @classmethod
+    def save(cls, info, instance, cleaned_input):
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            instance.vendor = vendor
+        instance.save()
 
 
 class SaleUpdate(SaleUpdateMinimalVariantPriceMixin, ModelMutation):
