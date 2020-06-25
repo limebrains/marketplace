@@ -209,10 +209,8 @@ class ProductQueries(graphene.ObjectType):
         ),
         description="List of the shop's products.",
     )
-    autocomplete_products = FilterInputConnectionField(
+    autocomplete_products = graphene.List(
         Product,
-        filter=ProductFilterInput(description="Filtering options for products."),
-        sort_by=ProductOrder(description="Sort products."),
         description="List of the shop's products.",
     )
     product_type = graphene.Field(

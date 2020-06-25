@@ -185,7 +185,6 @@ def resolve_products(
 
 def resolve_autocomplete_products(
     info,
-    attributes=None,
     sort_by=None,
     query=None,
     **_kwargs,
@@ -199,8 +198,6 @@ def resolve_autocomplete_products(
         search = picker.pick_backend()
         qs &= search(query)
 
-    if attributes:
-        qs = filter_products_by_attributes(qs, attributes)
     qs = qs.distinct()
 
     return gql_optimizer.query(qs, info)

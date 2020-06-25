@@ -108,7 +108,6 @@ class GraphQLView(View):
                 data={"errors": [self.format_error("Unable to parse query.")]},
                 status=400,
             )
-
         if isinstance(data, list):
             responses = [self.get_response(request, entry) for entry in data]
             result: Union[list, Optional[dict]] = [
@@ -141,7 +140,6 @@ class GraphQLView(View):
                     {"http.client_ip_originated_from": settings.REAL_IP_ENVIRON}
                 )
                 break
-
             response = self._handle_query(request)
             span.set_tag(ot_tags.HTTP_STATUS_CODE, response.status_code)
 

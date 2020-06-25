@@ -222,6 +222,7 @@ class CollectionCreate(ModelMutation):
     @classmethod
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
+        print('save4')
         if not user.is_superuser:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
@@ -954,6 +955,11 @@ class ProductCreate(ModelMutation):
             variant = models.ProductVariant.objects.create(
                 product=instance, track_inventory=track_inventory, sku=sku
             )
+            user = info.context.user
+            if not user.is_superuser:
+                variant.save()
+                vendor = Vendor.objects.get(admin_account=user)
+                variant.vendors.add(vendor)
             stocks = cleaned_input.get("stocks")
             quantity = cleaned_input.get("quantity")
             if stocks:
@@ -1266,6 +1272,11 @@ class ProductVariantCreate(ModelMutation):
         update_product_minimal_variant_price_task.delay(instance.product_id)
         stocks = cleaned_input.get("stocks")
         quantity = cleaned_input.get("quantity")
+        user = info.context.user
+        if not user.is_superuser:
+            vendor = Vendor.objects.get(admin_account=user)
+            if vendor not in instance.vendors.all():
+                instance.vendors.add(vendor)
         if stocks:
             cls.create_variant_stocks(instance, stocks)
         elif quantity:  # DEPRECATED: Will be removed in 2.11 (issue #5325)
