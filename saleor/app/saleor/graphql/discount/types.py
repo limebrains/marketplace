@@ -3,6 +3,7 @@ import graphene_django_optimizer as gql_optimizer
 from graphene import relay
 
 from ...discount import models
+from ..vendor.types import Vendor
 from ..core import types
 from ..core.connection import CountableDjangoObjectType
 from ..core.fields import PrefetchingConnectionField
@@ -31,6 +32,13 @@ class Sale(CountableDjangoObjectType):
         ),
         model_field="products",
     )
+    vendor = graphene.List(
+        of_type=Vendor,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
+    )
     translation = TranslationField(SaleTranslation, type_name="sale")
 
     class Meta:
@@ -45,6 +53,10 @@ class Sale(CountableDjangoObjectType):
     @staticmethod
     def resolve_categories(root: models.Sale, *_args, **_kwargs):
         return root.categories.all()
+
+    @staticmethod
+    def resolve_vendor(root: models.Sale, _info):
+        return root.vendor
 
     @staticmethod
     def resolve_collections(root: models.Sale, info, **_kwargs):
@@ -73,6 +85,13 @@ class Voucher(CountableDjangoObjectType):
             Product, description="List of products this voucher applies to."
         ),
         model_field="products",
+    )
+    vendor = graphene.List(
+        of_type=Vendor,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
     )
     countries = graphene.List(
         types.CountryDisplay,
@@ -117,6 +136,10 @@ class Voucher(CountableDjangoObjectType):
     @staticmethod
     def resolve_collections(root: models.Voucher, info, **_kwargs):
         return root.collections.visible_to_user(info.context.user)
+
+    @staticmethod
+    def resolve_vendor(root: models.Sale, _info):
+        return root.vendor
 
     @staticmethod
     def resolve_products(root: models.Voucher, info, **_kwargs):

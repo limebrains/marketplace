@@ -315,7 +315,7 @@ class ProductVariant(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_vendors(root: models.ProductVariant, *_args):
-        return root.vendors.all().values_list('name', flat=True)
+        return root.vendors.all()
 
     @staticmethod
     @gql_optimizer.resolver_hints(
@@ -599,10 +599,6 @@ class Product(CountableDjangoObjectType):
         return root.variants.all()
 
     @staticmethod
-    def resolve_vendors(root: models.Product, *_args, **_kwargs):
-        return root.variants.exclude(vendors__name__isnull=True).values_list('vendors__name', flat=True)
-
-    @staticmethod
     def resolve_collections(root: models.Product, *_args):
         return root.collections.all()
 
@@ -732,6 +728,13 @@ class Collection(CountableDjangoObjectType):
     background_image = graphene.Field(
         Image, size=graphene.Int(description="Size of the image.")
     )
+    vendors = graphene.List(
+        of_type=Vendor,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
+    )
     translation = TranslationField(CollectionTranslation, type_name="collection")
 
     class Meta:
@@ -765,6 +768,10 @@ class Collection(CountableDjangoObjectType):
     def resolve_products(root: models.Collection, info, **_kwargs):
         qs = root.products.collection_sorted(info.context.user)
         return gql_optimizer.query(qs, info)
+
+    @staticmethod
+    def resolve_vendors(root: models.Category, _info):
+        return root.vendor
 
     @classmethod
     def get_node(cls, info, id):
@@ -805,6 +812,13 @@ class Category(CountableDjangoObjectType):
     )
     background_image = graphene.Field(
         Image, size=graphene.Int(description="Size of the image.")
+    )
+    vendors = graphene.List(
+        of_type=Vendor,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
     )
     translation = TranslationField(CategoryTranslation, type_name="category")
 
@@ -852,6 +866,10 @@ class Category(CountableDjangoObjectType):
     @staticmethod
     def resolve_url(root: models.Category, _info):
         return ""
+
+    @staticmethod
+    def resolve_vendors(root: models.Category, _info):
+        return root.vendor
 
     @staticmethod
     def resolve_products(root: models.Category, info, **_kwargs):

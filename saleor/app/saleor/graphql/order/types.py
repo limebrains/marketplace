@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from graphene import relay
 from graphql_jwt.exceptions import PermissionDenied
 
+from ..vendor.types import Vendor
 from ...core.permissions import AccountPermissions, OrderPermissions
 from ...core.taxes import display_gross_prices
 from ...extensions.manager import get_extensions_manager
@@ -347,6 +348,13 @@ class Order(CountableDjangoObjectType):
     is_shipping_required = graphene.Boolean(
         description="Returns True, if order requires shipping.", required=True
     )
+    vendors = graphene.List(
+        of_type=Vendor,
+        required=False,
+        description=(
+            "Vendor id of specific item."
+        ),
+    )
 
     class Meta:
         description = "Represents an order in the shop."
@@ -401,6 +409,10 @@ class Order(CountableDjangoObjectType):
     @staticmethod
     def resolve_total(root: models.Order, _info):
         return root.total
+
+    @staticmethod
+    def resolve_vendors(root: models.Order, _info):
+        return root.vendors
 
     @staticmethod
     @gql_optimizer.resolver_hints(prefetch_related="payments__transactions")
