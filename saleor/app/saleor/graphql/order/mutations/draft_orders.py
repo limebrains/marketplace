@@ -167,7 +167,7 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
         if not created:
             events.draft_order_created_event(order=instance, user=info.context.user)
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendors = vendor
         instance.save(update_fields=["billing_address", "shipping_address", "vendors"])

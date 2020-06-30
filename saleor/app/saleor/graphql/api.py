@@ -9,6 +9,7 @@ from .giftcard.schema import GiftCardMutations, GiftCardQueries
 from .menu.schema import MenuMutations, MenuQueries
 from .meta.schema import MetaMutations
 from .order.schema import OrderMutations, OrderQueries
+from .vendor.schema import VendorQueries
 from .page.schema import PageMutations, PageQueries
 from .payment.schema import PaymentMutations, PaymentQueries
 from .product.schema import ProductMutations, ProductQueries
@@ -33,6 +34,7 @@ class Query(
     PaymentQueries,
     ProductQueries,
     ShippingQueries,
+    VendorQueries,
     ShopQueries,
     StockQueries,
     TranslationQueries,

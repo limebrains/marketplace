@@ -194,7 +194,7 @@ class ProductVariant(CountableDjangoObjectType):
         of_type=Vendor,
         required=False,
         description=(
-            "Vendor id of specific item."
+            "Vendors of specific item."
         ),
     )
     pricing = graphene.Field(
@@ -262,6 +262,7 @@ class ProductVariant(CountableDjangoObjectType):
             "Represents a version of a product such as different size or color."
         )
         only_fields = ["id", "name", "product", "sku", "track_inventory", "weight"]
+        filter_fields = ['vendors']
         interfaces = [relay.Node, ObjectWithMetadata]
         model = models.ProductVariant
 
@@ -594,7 +595,7 @@ class Product(CountableDjangoObjectType):
     @staticmethod
     def resolve_variants(root: models.Product, info, *_args, **_kwargs):
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             return root.variants.filter(vendors__admin_account=user)
         return root.variants.all()
 

@@ -29,6 +29,7 @@ from ..utils import (
 )
 from ..warehouse import types as warehouse_types
 from . import types
+from ..vendor.types import Vendor
 from .enums import (
     CollectionPublished,
     ProductTypeConfigurable,
@@ -112,6 +113,10 @@ def filter_products_by_collections(qs, collections):
     return qs.filter(collections__in=collections)
 
 
+def filter_products_by_vendors(qs, vendors):
+    return qs.filter(vendors__in=vendors)
+
+
 def filter_products_by_stock_availability(qs, stock_availability):
     total_stock = (
         Stock.objects.select_related("product_variant")
@@ -154,6 +159,13 @@ def filter_collections(qs, _, value):
     if value:
         collections = get_nodes(value, types.Collection)
         qs = filter_products_by_collections(qs, collections)
+    return qs
+
+
+def filter_vendors(qs, _, value):
+    if value:
+        vendors = get_nodes(value, Vendor)
+        qs = filter_products_by_vendors(qs, vendors)
     return qs
 
 
@@ -297,6 +309,7 @@ class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
     categories = GlobalIDMultipleChoiceFilter(method=filter_categories)
+    vendors = GlobalIDMultipleChoiceFilter(method=filter_vendors)
     has_category = django_filters.BooleanFilter(method=filter_has_category)
     price = ObjectTypeFilter(
         input_class=PriceRangeInput, method=filter_price, field_name="price_amount"
@@ -323,6 +336,7 @@ class ProductFilter(django_filters.FilterSet):
             "is_published",
             "collections",
             "categories",
+            "vendors",
             "has_category",
             "price",
             "attributes",

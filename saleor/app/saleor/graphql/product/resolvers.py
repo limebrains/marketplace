@@ -76,7 +76,7 @@ def resolve_attributes(
 def resolve_categories(info, query, level=None, sort_by=None, **_kwargs):
     user = info.context.user
     qs = models.Category.objects.prefetch_related("children")
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(vendor__admin_account=user)
     if level is not None:
         qs = qs.filter(level=level)
@@ -89,7 +89,7 @@ def resolve_categories(info, query, level=None, sort_by=None, **_kwargs):
 def resolve_collections(info, query, sort_by=None, **_kwargs):
     user = info.context.user
     qs = models.Collection.objects.visible_to_user(user)
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(vendor__admin_account=user)
     qs = filter_by_query_param(qs, query, COLLECTION_SEARCH_FIELDS)
     qs = sort_queryset(qs, sort_by, CollectionSortField)
@@ -153,7 +153,7 @@ def resolve_products(
 
     user = get_user_or_service_account_from_context(info.context)
     qs = models.Product.objects.visible_to_user(user)
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(variants__vendors__admin_account=user)
     qs = sort_products(qs, sort_by)
 
@@ -218,7 +218,7 @@ def resolve_product_variants(info, ids=None):
         "pk", flat=True
     )
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(vendors__admin_account=user)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariant") for node_id in ids]
@@ -232,7 +232,7 @@ def resolve_product_variants_vendor_listing(info, ids=None):
     #     "pk", flat=True
     # )
     qs = models.ProductVariantVendorListing.objects.all()
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(vendors__admin_account=user)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariantVendorListing") for node_id in ids]

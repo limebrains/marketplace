@@ -46,7 +46,7 @@ def sort_users(qs: QuerySet, sort_by: UserSortingInput) -> QuerySet:
 def resolve_customers(info, query, sort_by=None, **_kwargs):
     user = info.context.user
     qs = models.User.objects.customers()
-    if not user.is_superuser:
+    if not user.is_superuser and user.is_authenticated:
         qs = qs.filter(orders__vendors__admin_account=user)
     qs = filter_by_query_param(
         queryset=qs, query=query, search_fields=USER_SEARCH_FIELDS

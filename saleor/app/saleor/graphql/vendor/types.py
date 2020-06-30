@@ -2,11 +2,14 @@ import graphene
 from graphene import relay
 
 from ...vendor import models
+from ..core.types import Image
 from ..core.connection import CountableDjangoObjectType
 
 
 class Vendor(CountableDjangoObjectType):
     name = graphene.String(description="Name of the vendor.")
+    avatar = graphene.Field(Image, size=graphene.Int(description="Size of the avatar."))
+    description = graphene.String(description="Name of the vendor.")
     address = graphene.Field(lambda: VendorLocation, description="Vendor locations.")
 
     class Meta:
@@ -18,12 +21,27 @@ class Vendor(CountableDjangoObjectType):
         only_fields = ["name", "address"]
 
     @staticmethod
-    def resolve_categories(root: models.Vendor, *_args, **_kwargs):
+    def resolve_name(root: models.Vendor, *_args, **_kwargs):
         return root.name
 
     @staticmethod
-    def resolve_products(root: models.Vendor, info, **_kwargs):
+    def resolve_description(root: models.Vendor, *_args, **_kwargs):
+        return root.description
+
+    @staticmethod
+    def resolve_address(root: models.Vendor, info, **_kwargs):
         return root.address_set.all()
+
+    @staticmethod
+    def resolve_avatar(root: models.User, info, size=None, **_kwargs):
+        if root.avatar:
+            return Image.get_adjusted(
+                image=root.avatar,
+                alt=None,
+                size=size,
+                rendition_key_set="vendor_avatars",
+                info=info,
+            )
 
 
 class VendorLocation(CountableDjangoObjectType):

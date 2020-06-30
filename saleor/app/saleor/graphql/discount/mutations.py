@@ -168,7 +168,7 @@ class VoucherCreate(ModelMutation):
     @classmethod
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
         instance.save()
@@ -299,7 +299,7 @@ class SaleCreate(SaleUpdateMinimalVariantPriceMixin, ModelMutation):
     @classmethod
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
         instance.save()

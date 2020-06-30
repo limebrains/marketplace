@@ -114,7 +114,7 @@ class CategoryCreate(ModelMutation):
     @classmethod
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
 
@@ -223,7 +223,7 @@ class CollectionCreate(ModelMutation):
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
         print('save4')
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
         instance.save()
@@ -956,7 +956,7 @@ class ProductCreate(ModelMutation):
                 product=instance, track_inventory=track_inventory, sku=sku
             )
             user = info.context.user
-            if not user.is_superuser:
+            if not user.is_superuser and user.is_authenticated:
                 variant.save()
                 vendor = Vendor.objects.get(admin_account=user)
                 variant.vendors.add(vendor)
@@ -1273,7 +1273,7 @@ class ProductVariantCreate(ModelMutation):
         stocks = cleaned_input.get("stocks")
         quantity = cleaned_input.get("quantity")
         user = info.context.user
-        if not user.is_superuser:
+        if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             if vendor not in instance.vendors.all():
                 instance.vendors.add(vendor)
