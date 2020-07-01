@@ -35,8 +35,8 @@ from .filters import (
     CollectionFilterInput,
     ProductFilterInput,
     ProductTypeFilterInput,
-    ProductVariantVendorListingTypeFilterInput
-)
+    ProductVariantVendorListingTypeFilterInput,
+    ProductVariantFilterInput)
 from .mutations.attributes import (
     AttributeAssign,
     AttributeClearMeta,
@@ -242,6 +242,11 @@ class ProductQueries(graphene.ObjectType):
         ),
         description="List of product variants.",
     )
+    product_variants_filtered = FilterInputConnectionField(
+        ProductVariant,
+        filter=ProductVariantFilterInput(description="Filtering options for product variants."),
+        description="List of product variants.",
+    )
     product_variants_vendor_listing = PrefetchingConnectionField(
         ProductVariantVendorListing,
         filter=ProductVariantVendorListingTypeFilterInput(
@@ -287,6 +292,10 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, Product)
 
     def resolve_products(self, info, **kwargs):
+        filter_values = kwargs.get("filter", None)
+        if filter_values:
+            return resolve_products(info, vendors=filter_values.get("vendors"), **kwargs)
+
         return resolve_products(info, **kwargs)
 
     def resolve_autocomplete_products(self, info, **kwargs):
@@ -302,6 +311,12 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, ProductVariant)
 
     def resolve_product_variants(self, info, ids=None, **_kwargs):
+        return resolve_product_variants(info, ids)
+
+    def resolve_product_variants_filtered(self, info, ids=None, **_kwargs):
+        filter_values = _kwargs.get("filter", None)
+        if filter_values:
+            return resolve_product_variants(info, ids, vendors=filter_values.get("vendors"))
         return resolve_product_variants(info, ids)
 
     def resolve_product_variants_vendor_listing(self, info, ids=None, **_kwargs):

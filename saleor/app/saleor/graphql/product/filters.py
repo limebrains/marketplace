@@ -114,7 +114,11 @@ def filter_products_by_collections(qs, collections):
 
 
 def filter_products_by_vendors(qs, vendors):
-    return qs.filter(vendors__in=vendors)
+    return qs.filter(variants__vendors__name__in=vendors)
+
+
+def filter_product_variants_by_vendors(qs, vendors):
+    return qs.filter(vendors__name__in=vendors)
 
 
 def filter_products_by_stock_availability(qs, stock_availability):
@@ -164,8 +168,13 @@ def filter_collections(qs, _, value):
 
 def filter_vendors(qs, _, value):
     if value:
-        vendors = get_nodes(value, Vendor)
-        qs = filter_products_by_vendors(qs, vendors)
+        qs = qs.filter(variants__vendors__name=value)
+    return qs
+
+
+def filter_variant_vendors(qs, _, value):
+    if value:
+        qs = qs.filter(vendors__name=value)
     return qs
 
 
@@ -347,6 +356,14 @@ class ProductFilter(django_filters.FilterSet):
         ]
 
 
+class ProductVariantFilter(django_filters.FilterSet):
+    vendors = django_filters.CharFilter(method=filter_variant_vendors)
+
+    class Meta:
+        model = ProductVariant
+        fields = ["vendors"]
+
+
 class CollectionFilter(django_filters.FilterSet):
     published = EnumFilter(
         input_class=CollectionPublished, method=filter_collection_publish
@@ -422,6 +439,11 @@ class AttributeFilter(django_filters.FilterSet):
 class ProductFilterInput(FilterInputObjectType):
     class Meta:
         filterset_class = ProductFilter
+
+
+class ProductVariantFilterInput(FilterInputObjectType):
+    class Meta:
+        filterset_class = ProductVariantFilter
 
 
 class CollectionFilterInput(FilterInputObjectType):

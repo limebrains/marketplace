@@ -26,7 +26,7 @@ from .filters import (
     filter_products_by_minimal_price,
     filter_products_by_price,
     filter_products_by_stock_availability,
-)
+    filter_products_by_vendors)
 from .sorters import (
     AttributeSortField,
     CategorySortField,
@@ -141,6 +141,7 @@ def resolve_products(
     attributes=None,
     categories=None,
     collections=None,
+    vendors=None,
     price_lte=None,
     price_gte=None,
     minimal_price_lte=None,
@@ -163,6 +164,9 @@ def resolve_products(
 
     if attributes:
         qs = filter_products_by_attributes(qs, attributes)
+
+    if vendors:
+        qs = filter_products_by_vendors(qs, vendors)
 
     if categories:
         categories = get_nodes(categories, "Category", models.Category)
@@ -212,14 +216,16 @@ def resolve_product_types(info, query, sort_by=None, **_kwargs):
     return gql_optimizer.query(qs, info)
 
 
-def resolve_product_variants(info, ids=None):
+def resolve_product_variants(info, ids=None, vendors=None):
     user = info.context.user
     visible_products = models.Product.objects.visible_to_user(user).values_list(
         "pk", flat=True
     )
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
-    if not user.is_superuser and user.is_authenticated:
+    if not user.is_superuser and user.is_authenticated and not vendors:
         qs = qs.filter(vendors__admin_account=user)
+    if vendors:
+        qs = qs.filter(vendors__name=vendors)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariant") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)
