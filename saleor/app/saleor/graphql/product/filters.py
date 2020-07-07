@@ -121,6 +121,10 @@ def filter_product_variants_by_vendors(qs, vendors):
     return qs.filter(vendors__name__in=vendors)
 
 
+def filter_categories_by_vendors(qs, _, vendor):
+    return qs.filter(vendor__name=vendor)
+
+
 def filter_products_by_stock_availability(qs, stock_availability):
     total_stock = (
         Stock.objects.select_related("product_variant")
@@ -382,11 +386,12 @@ class CategoryFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(
         method=filter_fields_containing_value("slug", "name", "description")
     )
+    vendor = django_filters.CharFilter(method=filter_categories_by_vendors)
     ids = GlobalIDMultipleChoiceFilter(field_name="id")
 
     class Meta:
         model = Category
-        fields = ["search"]
+        fields = ["search", "vendor"]
 
 
 class ProductTypeFilter(django_filters.FilterSet):

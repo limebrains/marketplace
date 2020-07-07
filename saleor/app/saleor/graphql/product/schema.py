@@ -269,6 +269,9 @@ class ProductQueries(graphene.ObjectType):
         return graphene.Node.get_node_from_global_id(info, id, Attribute)
 
     def resolve_categories(self, info, level=None, query=None, **kwargs):
+        filter_values = kwargs.get("filter", None)
+        if filter_values:
+            return resolve_categories(info, vendor=filter_values.get("vendors"), level=level, query=query, **kwargs)
         return resolve_categories(info, level=level, query=query, **kwargs)
 
     def resolve_category(self, info, id):
