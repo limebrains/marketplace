@@ -159,7 +159,6 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
 
     @classmethod
     def _commit_changes(cls, info, instance, cleaned_input):
-        print('save2')
         created = instance.pk
         super().save(info, instance, cleaned_input)
 

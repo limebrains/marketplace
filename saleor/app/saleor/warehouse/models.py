@@ -5,6 +5,7 @@ from typing import Set
 from django.db import models
 from django.db.models import F
 
+from ..vendor.models import Vendor
 from ..account.models import Address
 from ..core.exceptions import InsufficientStock
 from ..product.models import ProductVariant
@@ -15,8 +16,8 @@ class WarehouseQueryset(models.QuerySet):
     def prefetch_data(self):
         return self.select_related("address").prefetch_related("shipping_zones")
 
-    def for_country(self, country: str):
-        return self.prefetch_data().get(shipping_zones__countries__contains=country)
+    def for_country(self, country: str, vendor):
+        return self.prefetch_data().get(shipping_zones__countries__contains=country, vendor__name=vendor)
 
 
 class Warehouse(models.Model):
@@ -29,6 +30,7 @@ class Warehouse(models.Model):
         ShippingZone, blank=True, related_name="warehouses"
     )
     address = models.ForeignKey(Address, on_delete=models.PROTECT)
+    vendor = models.ForeignKey(Vendor, on_delete=models.PROTECT, blank=True, null=True)
 
     email = models.EmailField(blank=True, default="")
 
@@ -55,32 +57,35 @@ class StockQuerySet(models.QuerySet):
     def annotate_available_quantity(self):
         return self.annotate(available_quantity=F("quantity") - F("quantity_allocated"))
 
-    def for_country(self, country_code: str):
+    def for_country(self, country_code: str, vendor):
+        warehouse_queryset = {}
+        if vendor:
+            warehouse_queryset["vendor__name"] = vendor
+        if country_code:
+            warehouse_queryset["shipping_zones__countries__contains"] = country_code
         query_warehouse = models.Subquery(
-            Warehouse.objects.filter(
-                shipping_zones__countries__contains=country_code
-            ).values("pk")
+            Warehouse.objects.filter(**warehouse_queryset).values("pk")
         )
         return self.select_related("product_variant", "warehouse").filter(
             warehouse__in=query_warehouse
         )
 
     def get_variant_stock_for_country(
-        self, country_code: str, product_variant: ProductVariant
+        self, country_code: str, product_variant: ProductVariant, vendor
     ):
         """Return the stock information about the a stock for a given country.
 
         Note it will raise a 'Stock.DoesNotExist' exception if no such stock is found.
         """
-        return self.for_country(country_code).get(product_variant=product_variant)
+        return self.for_country(country_code, vendor).get(product_variant=product_variant)
 
     def get_or_create_for_country(
-        self, country_code: str, product_variant: ProductVariant
+        self, country_code: str, product_variant: ProductVariant, vendor
     ):
         try:
-            return self.get_variant_stock_for_country(country_code, product_variant)
+            return self.get_variant_stock_for_country(country_code, product_variant, vendor)
         except Stock.DoesNotExist:
-            warehouse = Warehouse.objects.for_country(country_code)
+            warehouse = Warehouse.objects.for_country(country_code, vendor)
             return self.create(product_variant=product_variant, warehouse=warehouse)
 
 

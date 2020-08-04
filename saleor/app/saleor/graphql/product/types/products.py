@@ -208,6 +208,11 @@ class ProductVariant(CountableDjangoObjectType):
         description="Whether the variant is in stock and visible or not.",
         deprecation_reason="This field will be removed in Saleor 2.11. "
         "Use the stock field instead.",
+        vendor=graphene.Argument(
+            graphene.String,
+            description="Warehouse owner, product vendor",
+            required=False
+        )
     )
 
     attributes = gql_optimizer.field(
@@ -254,6 +259,11 @@ class ProductVariant(CountableDjangoObjectType):
                 description="Two-letter ISO 3166-1 country code.",
                 required=False,
             ),
+            vendor=graphene.Argument(
+                graphene.String,
+                description="Warehouse owner, product vendor",
+                required=False
+            )
         )
     )
 
@@ -267,13 +277,13 @@ class ProductVariant(CountableDjangoObjectType):
         model = models.ProductVariant
 
     @staticmethod
-    def resolve_stocks(root: models.ProductVariant, info, country_code=None):
+    def resolve_stocks(root: models.ProductVariant, info, country_code=None, vendor=None):
         if not country_code:
             return gql_optimizer.query(
-                root.stocks.annotate_available_quantity().all(), info
+                root.stocks.annotate_available_quantity().for_country(country_code, vendor).all(), info
             )
         return gql_optimizer.query(
-            root.stocks.annotate_available_quantity().for_country(country_code).all(),
+            root.stocks.annotate_available_quantity().for_country(country_code, vendor).all(),
             info,
         )
 
@@ -283,11 +293,12 @@ class ProductVariant(CountableDjangoObjectType):
         return getattr(root, "digital_content", None)
 
     @staticmethod
-    def resolve_stock_quantity(root: models.ProductVariant, info):
+    def resolve_stock_quantity(root: models.ProductVariant, info, vendor=None):
         country = info.context.country
+        user_vendor = info.context.user.vendor.name
         try:
             stock = stock_models.Stock.objects.get_variant_stock_for_country(
-                country, root
+                country, root, vendor=user_vendor or vendor
             )
         except stock_models.Stock.DoesNotExist:
             return 0
@@ -336,7 +347,8 @@ class ProductVariant(CountableDjangoObjectType):
     @staticmethod
     def resolve_is_available(root: models.ProductVariant, info):
         country = info.context.country
-        return is_variant_in_stock(root, country)
+        user_vendor = info.context.user.vendor.name
+        return is_variant_in_stock(root, country, vendor=user_vendor)
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
@@ -346,7 +358,8 @@ class ProductVariant(CountableDjangoObjectType):
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
     def resolve_quantity(root: models.ProductVariant, info):
-        return get_available_quantity(root, info.context.country)
+        user_vendor = info.context.user.vendor.name
+        return get_available_quantity(root, info.context.country, vendor=user_vendor)
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
@@ -359,7 +372,8 @@ class ProductVariant(CountableDjangoObjectType):
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
     def resolve_quantity_allocated(root: models.ProductVariant, info):
         country = info.context.country
-        return get_quantity_allocated(root, country)
+        user_vendor = info.context.user.vendor.name
+        return get_quantity_allocated(root, country, vendor=user_vendor)
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
@@ -414,7 +428,12 @@ class Product(CountableDjangoObjectType):
         ),
     )
     is_available = graphene.Boolean(
-        description="Whether the product is in stock and visible or not."
+        description="Whether the product is in stock and visible or not.",
+        vendor=graphene.Argument(
+            graphene.String,
+            description="Warehouse owner, product vendor",
+            required=False
+        )
     )
     base_price = graphene.Field(Money, description="The product's default base price.")
     minimal_variant_price = graphene.Field(
@@ -526,7 +545,8 @@ class Product(CountableDjangoObjectType):
     @gql_optimizer.resolver_hints(prefetch_related=("variants"))
     def resolve_is_available(root: models.Product, info):
         country = info.context.country
-        in_stock = is_product_in_stock(root, country)
+        vendor = info.context.user.vendor.name
+        in_stock = is_product_in_stock(root, country, vendor)
         return root.is_visible and in_stock
 
     @staticmethod

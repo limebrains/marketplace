@@ -222,7 +222,6 @@ class CollectionCreate(ModelMutation):
     @classmethod
     def save(cls, info, instance, cleaned_input):
         user = info.context.user
-        print('save4')
         if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
             instance.vendor = vendor
@@ -965,7 +964,7 @@ class ProductCreate(ModelMutation):
             if stocks:
                 cls.create_variant_stocks(variant, stocks)
             elif quantity:  # DEPRECATED: Will be removed in 2.11 (issue #5325)
-                set_stock_quantity(variant, info.context.country, quantity)
+                set_stock_quantity(variant, info.context.country, info.context.user.vendor.name, quantity)
 
         attributes = cleaned_input.get("attributes")
         if attributes:
@@ -1190,6 +1189,8 @@ class ProductVariantCreate(ModelMutation):
     ):
         cleaned_input = super().clean_input(info, instance, data)
 
+        vendor = info.context.user.vendor.name
+
         if "cost_price" in cleaned_input:
             cleaned_input["cost_price_amount"] = cleaned_input.pop("cost_price")
 
@@ -1211,16 +1212,15 @@ class ProductVariantCreate(ModelMutation):
                 # simply retrieve the associated product type
                 product_type = instance.product.product_type
                 used_attribute_values = get_used_variants_attribute_values(
-                    instance.product
+                    instance.product, vendor
                 )
             else:
                 # If the variant is getting created, no product type is associated yet,
                 # retrieve it from the required "product" input field
                 product_type = cleaned_input["product"].product_type
                 used_attribute_values = get_used_variants_attribute_values(
-                    cleaned_input["product"]
+                    cleaned_input["product"], vendor
                 )
-
             try:
                 cls.validate_duplicated_attribute_values(
                     attributes, used_attribute_values, instance
@@ -1280,7 +1280,7 @@ class ProductVariantCreate(ModelMutation):
         if stocks:
             cls.create_variant_stocks(instance, stocks)
         elif quantity:  # DEPRECATED: Will be removed in 2.11 (issue #5325)
-            set_stock_quantity(instance, info.context.country, quantity)
+            set_stock_quantity(instance, info.context.country, info.context.user.vendor.name, quantity)
 
         attributes = cleaned_input.get("attributes")
         if attributes:

@@ -74,7 +74,7 @@ def get_used_attibute_values_for_variant(variant):
     return attribute_values
 
 
-def get_used_variants_attribute_values(product):
+def get_used_variants_attribute_values(product, vendor):
     """Create list of attributes values for all existing `ProductVariants` for product.
 
     Sample result is:
@@ -93,7 +93,7 @@ def get_used_variants_attribute_values(product):
     variants = (
         product.variants.prefetch_related("attributes__values")
         .prefetch_related("attributes__assignment")
-        .all()
+        .filter(vendors__name=vendor)
     )
     used_attribute_values = []
     for variant in variants:

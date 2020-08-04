@@ -34,12 +34,13 @@ def deallocate_stock(
 def increase_stock(
     variant: "ProductVariant",
     country_code: str,
+    vendor: str,
     quantity: int,
     allocate: bool = False,
     commit: bool = True,
 ) -> Stock:
     stock = Stock.objects.select_for_update(of=("self",)).get_or_create_for_country(
-        country_code, variant
+        country_code, variant, vendor
     )
     stock.increase_stock(quantity, allocate=allocate, commit=commit)
     return stock
@@ -58,10 +59,10 @@ def decrease_stock(
 
 @transaction.atomic
 def set_stock_quantity(
-    variant: "ProductVariant", country_code: str, quantity: int, commit: bool = True
+    variant: "ProductVariant", country_code: str, vendor: str, quantity: int, commit: bool = True
 ) -> Stock:
     stock = Stock.objects.select_for_update(of=("self",)).get_or_create_for_country(
-        country_code, variant
+        country_code, variant, vendor
     )
     stock.quantity = quantity
     if commit:
