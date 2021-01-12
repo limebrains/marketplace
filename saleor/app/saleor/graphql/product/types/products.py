@@ -167,21 +167,19 @@ class ProductVariant(CountableDjangoObjectType):
     quantity = graphene.Int(
         required=True,
         description="Quantity of a product in the store's possession, "
-        "including the allocated stock that is waiting for shipment.",
-        deprecation_reason="This field will be removed in Saleor 2.11. "
-        "Use the stock field instead.",
+        "including the allocated stock that is waiting for shipment."
     )
     quantity_allocated = graphene.Int(
         required=False,
-        description="Quantity allocated for orders",
-        deprecation_reason="This field will be removed in Saleor 2.11. "
-        "Use the stock field instead.",
+        description="Quantity allocated for orders"
+    )
+    quantity_available = graphene.Int(
+        required=False,
+        description="Quantity avilable for orders"
     )
     stock_quantity = graphene.Int(
         required=True,
-        description="Quantity of a product available for sale.",
-        deprecation_reason="This field will be removed in Saleor 2.11. "
-        "Use the stock field instead.",
+        description="Quantity of a product available for sale."
     )
     price_override = graphene.Field(
         Money,
@@ -278,6 +276,7 @@ class ProductVariant(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_stocks(root: models.ProductVariant, info, country_code=None, vendor=None):
+        print('DUPA', country_code, vendor)
         if not country_code:
             return gql_optimizer.query(
                 root.stocks.annotate_available_quantity().for_country(country_code, vendor).all(), info
@@ -374,6 +373,13 @@ class ProductVariant(CountableDjangoObjectType):
         country = info.context.country
         user_vendor = info.context.user.vendor.name
         return get_quantity_allocated(root, country, vendor=user_vendor)
+
+    @staticmethod
+    @permission_required(ProductPermissions.MANAGE_PRODUCTS)
+    def resolve_quantity_available(root: models.ProductVariant, info):
+        country = info.context.country
+        user_vendor = info.context.user.vendor.name
+        return get_available_quantity(root, country, vendor=user_vendor)
 
     @staticmethod
     @permission_required(ProductPermissions.MANAGE_PRODUCTS)
