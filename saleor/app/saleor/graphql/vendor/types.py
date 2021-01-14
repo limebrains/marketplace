@@ -8,6 +8,7 @@ from ..core.connection import CountableDjangoObjectType
 
 class Vendor(CountableDjangoObjectType):
     name = graphene.String(description="Name of the vendor.")
+    slug = graphene.String(description="Name of the vendor without spaces.")
     avatar = graphene.Field(Image, size=graphene.Int(description="Size of the avatar."))
     description = graphene.String(description="Name of the vendor.")
     address = graphene.Field(lambda: VendorLocation, description="Vendor locations.")
@@ -23,6 +24,10 @@ class Vendor(CountableDjangoObjectType):
     @staticmethod
     def resolve_name(root: models.Vendor, *_args, **_kwargs):
         return root.name
+
+    @staticmethod
+    def resolve_slug(root: models.Vendor, *_args, **_kwargs):
+        return root.slug
 
     @staticmethod
     def resolve_description(root: models.Vendor, *_args, **_kwargs):

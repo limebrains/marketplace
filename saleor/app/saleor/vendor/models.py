@@ -12,7 +12,7 @@ from ..core.utils.slugify import (
 
 class Vendor(ModelWithMetadata):
     name = models.CharField(max_length=250)
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from='name', unique=True, null=True)
     avatar = VersatileImageField(upload_to="vendor-avatars", blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     admin_account = models.OneToOneField(
