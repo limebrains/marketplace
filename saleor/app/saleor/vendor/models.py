@@ -5,9 +5,6 @@ from ..account.models import User
 from ..core.models import (
     ModelWithMetadata,
 )
-from ..core.utils.slugify import (
-    slugify
-)
 
 
 class Vendor(ModelWithMetadata):
@@ -20,9 +17,6 @@ class Vendor(ModelWithMetadata):
         on_delete=models.DO_NOTHING,
         primary_key=True,
     )
-
-    def get_slug(self):
-        return slugify(self.name)
 
 
 class VendorLocation(ModelWithMetadata):

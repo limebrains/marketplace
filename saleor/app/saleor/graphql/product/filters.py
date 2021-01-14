@@ -318,6 +318,7 @@ class ProductStockFilterInput(graphene.InputObjectType):
     quantity = graphene.Field(IntRangeInput, required=False)
 
 
+# TODO filter categories using Vendor.slug field
 class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
