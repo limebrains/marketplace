@@ -26,7 +26,8 @@ from .filters import (
     filter_products_by_minimal_price,
     filter_products_by_price,
     filter_products_by_stock_availability,
-    filter_products_by_vendors)
+    filter_products_by_vendors,
+    filter_vendors)
 from .sorters import (
     AttributeSortField,
     CategorySortField,
@@ -143,6 +144,7 @@ def resolve_products(
     attributes=None,
     categories=None,
     collections=None,
+    vendor=None,
     vendors=None,
     price_lte=None,
     price_gte=None,
@@ -166,6 +168,9 @@ def resolve_products(
 
     if attributes:
         qs = filter_products_by_attributes(qs, attributes)
+
+    if vendor:
+        qs = filter_vendors(qs, vendor)
 
     if vendors:
         qs = filter_products_by_vendors(qs, vendors)

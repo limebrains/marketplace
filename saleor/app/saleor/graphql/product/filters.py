@@ -322,7 +322,7 @@ class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
     categories = GlobalIDMultipleChoiceFilter(method=filter_categories)
-    vendors = django_filters.CharFilter(method=filter_vendors)
+    vendor = django_filters.CharFilter(method=filter_vendors)
     has_category = django_filters.BooleanFilter(method=filter_has_category)
     price = ObjectTypeFilter(
         input_class=PriceRangeInput, method=filter_price, field_name="price_amount"
@@ -349,7 +349,7 @@ class ProductFilter(django_filters.FilterSet):
             "is_published",
             "collections",
             "categories",
-            "vendors",
+            "vendor",
             "has_category",
             "price",
             "attributes",

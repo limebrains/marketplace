@@ -1,4 +1,5 @@
 from django.db import models
+from django_extensions.db.fields import AutoSlugField
 from versatileimagefield.fields import VersatileImageField
 from ..account.models import User
 from ..core.models import (
@@ -11,6 +12,7 @@ from ..core.utils.slugify import (
 
 class Vendor(ModelWithMetadata):
     name = models.CharField(max_length=250)
+    slug = AutoSlugField(populate_from='title')
     avatar = VersatileImageField(upload_to="vendor-avatars", blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     admin_account = models.OneToOneField(
