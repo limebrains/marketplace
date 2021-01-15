@@ -122,7 +122,7 @@ def filter_product_variants_by_vendors(qs, vendors):
 
 
 def filter_categories_by_vendors(qs, _, vendor):
-    return qs.filter(vendor__name=vendor)
+    return qs.filter(vendor__slug=vendor)
 
 
 def filter_products_by_stock_availability(qs, stock_availability):
@@ -172,7 +172,7 @@ def filter_collections(qs, _, value):
 
 def filter_vendors(qs, _, value):
     if value:
-        qs = qs.filter(variants__vendors__name=value)
+        qs = qs.filter(variants__vendors__slug=value)
     return qs
 
 
@@ -318,7 +318,6 @@ class ProductStockFilterInput(graphene.InputObjectType):
     quantity = graphene.Field(IntRangeInput, required=False)
 
 
-# TODO filter categories using Vendor.slug field
 class ProductFilter(django_filters.FilterSet):
     is_published = django_filters.BooleanFilter()
     collections = GlobalIDMultipleChoiceFilter(method=filter_collections)
