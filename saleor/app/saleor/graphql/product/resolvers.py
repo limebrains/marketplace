@@ -80,7 +80,7 @@ def resolve_categories(info, query, vendor=None, level=None, sort_by=None, **_kw
     if not user.is_superuser and user.is_authenticated and not vendor:
         qs = qs.filter(vendor__admin_account=user)
     if vendor:
-        qs = qs.filter(vendor__name=vendor)
+        qs = qs.filter(vendor__slug=vendor)
     if level is not None:
         qs = qs.filter(level=level)
     qs = filter_by_query_param(qs, query, CATEGORY_SEARCH_FIELDS)

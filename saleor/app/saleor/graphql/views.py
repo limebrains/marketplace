@@ -210,7 +210,6 @@ class GraphQLView(View):
             span.set_tag(ot_tags.COMPONENT, "graphql_query")
 
             query, variables, operation_name = self.get_graphql_params(request, data)
-
             document, error = self.parse_query(query)
             if error:
                 return error

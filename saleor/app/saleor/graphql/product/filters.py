@@ -375,6 +375,7 @@ class CollectionFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(
         method=filter_fields_containing_value("slug", "name")
     )
+    vendor = django_filters.CharFilter(method=filter_vendors)
     ids = GlobalIDMultipleChoiceFilter(field_name="id")
 
     class Meta:

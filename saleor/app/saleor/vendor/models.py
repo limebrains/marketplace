@@ -17,6 +17,13 @@ class Vendor(ModelWithMetadata):
         on_delete=models.DO_NOTHING,
         primary_key=True,
     )
+    homepage_collection = models.ForeignKey(
+        "product.Collection",
+        on_delete=models.SET_NULL,
+        related_name="+",
+        blank=True,
+        null=True,
+    )
 
 
 class VendorLocation(ModelWithMetadata):

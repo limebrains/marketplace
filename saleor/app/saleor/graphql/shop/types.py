@@ -5,6 +5,7 @@ from django_countries import countries
 from django_prices_vatlayer.models import VAT
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
+from ..product.filters import CollectionFilterInput
 from ...account import models as account_models
 from ...core.permissions import SitePermissions, get_permissions
 from ...core.utils import get_client_ip, get_country_by_ip
@@ -24,6 +25,7 @@ from ..translations.resolvers import resolve_translation
 from ..translations.types import ShopTranslation
 from ..utils import format_permissions_for_display
 from .enums import AuthorizationKeyType
+from ...vendor.models import Vendor
 
 
 class Navigation(graphene.ObjectType):
@@ -100,7 +102,9 @@ class Shop(graphene.ObjectType):
     description = graphene.String(description="Shop's description.")
     domain = graphene.Field(Domain, required=True, description="Shop's domain data.")
     homepage_collection = graphene.Field(
-        Collection, description="Collection displayed on homepage."
+        Collection,
+        filter=CollectionFilterInput(description="Filtering options for Collection"),
+        description="Collection displayed on homepage."
     )
     languages = graphene.List(
         LanguageDisplay,
@@ -206,8 +210,13 @@ class Shop(graphene.ObjectType):
         return info.context.site.settings.description
 
     @staticmethod
-    def resolve_homepage_collection(_, info):
-        collection_pk = info.context.site.settings.homepage_collection_id
+    def resolve_homepage_collection(_, info, filter=None):
+        if filter:
+            collection_pk = Vendor.objects.get(
+                slug=filter.get("vendor")
+            ).homepage_collection_id
+        else:
+            collection_pk = info.context.site.settings.homepage_collection_id
         qs = product_models.Collection.objects.all()
         return get_node_optimized(qs, {"pk": collection_pk}, info)
 
