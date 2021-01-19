@@ -15,6 +15,7 @@ from ..core.mutations import BaseMutation, ModelDeleteMutation, ModelMutation
 from ..core.types.common import ShopError
 from ..product.types import Collection
 from .types import AuthorizationKey, AuthorizationKeyType, Shop
+from ...vendor.models import Vendor
 
 
 class ShopSettingsInput(graphene.InputObjectType):
@@ -186,6 +187,7 @@ class HomepageCollectionUpdate(BaseMutation):
 
     class Arguments:
         collection = graphene.ID(description="Collection displayed on homepage.")
+        vendor = graphene.String(description="Vendor's slug.")
 
     class Meta:
         description = "Updates homepage collection of the shop."
@@ -194,14 +196,14 @@ class HomepageCollectionUpdate(BaseMutation):
         error_type_field = "shop_errors"
 
     @classmethod
-    def perform_mutation(cls, _root, info, collection=None):
+    def perform_mutation(cls, _root, info, collection=None, vendor=None):
         new_collection = cls.get_node_or_error(
             info, collection, field="collection", only_type=Collection
         )
-        site_settings = info.context.site.settings
-        site_settings.homepage_collection = new_collection
-        cls.clean_instance(info, site_settings)
-        site_settings.save(update_fields=["homepage_collection"])
+        # TODO setting homepage to null
+        vendor_model = Vendor.objects.get(slug=vendor)
+        setattr(vendor_model, "homepage_collection", new_collection)
+        vendor_model.save(update_fields=["homepage_collection"])
         return HomepageCollectionUpdate(shop=Shop())
 
 

@@ -101,11 +101,13 @@ class Shop(graphene.ObjectType):
     )
     description = graphene.String(description="Shop's description.")
     domain = graphene.Field(Domain, required=True, description="Shop's domain data.")
+    # TODO delete it \/
     homepage_collection = graphene.Field(
         Collection,
         filter=CollectionFilterInput(description="Filtering options for Collection"),
         description="Collection displayed on homepage."
     )
+    # ============== /\
     languages = graphene.List(
         LanguageDisplay,
         description="List of the shops's supported languages.",
@@ -211,12 +213,11 @@ class Shop(graphene.ObjectType):
 
     @staticmethod
     def resolve_homepage_collection(_, info, filter=None):
+        collection_pk = None
         if filter:
             collection_pk = Vendor.objects.get(
                 slug=filter.get("vendor")
             ).homepage_collection_id
-        else:
-            collection_pk = info.context.site.settings.homepage_collection_id
         qs = product_models.Collection.objects.all()
         return get_node_optimized(qs, {"pk": collection_pk}, info)
 
