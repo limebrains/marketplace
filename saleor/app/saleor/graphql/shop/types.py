@@ -5,7 +5,6 @@ from django_countries import countries
 from django_prices_vatlayer.models import VAT
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
-from ..product.filters import CollectionFilterInput
 from ...account import models as account_models
 from ...core.permissions import SitePermissions, get_permissions
 from ...core.utils import get_client_ip, get_country_by_ip
@@ -18,7 +17,6 @@ from ..core.types.common import CountryDisplay, LanguageDisplay, PermissionDispl
 from ..core.utils import get_node_optimized, str_to_enum
 from ..decorators import permission_required
 from ..menu.types import Menu
-from ..product.types import Collection
 from ..translations.enums import LanguageCodeEnum
 from ..translations.fields import TranslationField
 from ..translations.resolvers import resolve_translation
@@ -101,13 +99,6 @@ class Shop(graphene.ObjectType):
     )
     description = graphene.String(description="Shop's description.")
     domain = graphene.Field(Domain, required=True, description="Shop's domain data.")
-    # TODO delete it \/
-    homepage_collection = graphene.Field(
-        Collection,
-        filter=CollectionFilterInput(description="Filtering options for Collection"),
-        description="Collection displayed on homepage."
-    )
-    # ============== /\
     languages = graphene.List(
         LanguageDisplay,
         description="List of the shops's supported languages.",

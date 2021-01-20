@@ -29,7 +29,6 @@ from ..utils import (
 )
 from ..warehouse import types as warehouse_types
 from . import types
-from ..vendor.types import Vendor
 from .enums import (
     CollectionPublished,
     ProductTypeConfigurable,
