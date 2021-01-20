@@ -798,6 +798,7 @@ type CheckoutLineDelete {
 input CheckoutLineInput {
   quantity: Int!
   variantId: ID!
+  vendorName: String!
 }
 
 type CheckoutLinesAdd {
