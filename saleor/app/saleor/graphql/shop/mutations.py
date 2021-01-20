@@ -200,7 +200,6 @@ class HomepageCollectionUpdate(BaseMutation):
         new_collection = cls.get_node_or_error(
             info, collection, field="collection", only_type=Collection
         )
-        # TODO setting homepage to null
         vendor_model = Vendor.objects.get(slug=vendor)
         setattr(vendor_model, "homepage_collection", new_collection)
         vendor_model.save(update_fields=["homepage_collection"])

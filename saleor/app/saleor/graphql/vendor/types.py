@@ -12,6 +12,10 @@ class Vendor(CountableDjangoObjectType):
     avatar = graphene.Field(Image, size=graphene.Int(description="Size of the avatar."))
     description = graphene.String(description="Name of the vendor.")
     address = graphene.Field(lambda: VendorLocation, description="Vendor locations.")
+    homepage_collection = graphene.Field(
+        'saleor.graphql.product.types.Collection',
+        description="ID of collection displayed on vendor's homepage."
+    )
 
     class Meta:
         description = (
