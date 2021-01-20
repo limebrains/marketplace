@@ -19,6 +19,7 @@ from ..core.taxes import zero_money
 from ..core.weight import zero_weight
 from ..giftcard.models import GiftCard
 from ..shipping.models import ShippingMethod
+from ..vendor.models import Vendor
 
 if TYPE_CHECKING:
     # flake8: noqa
@@ -178,6 +179,12 @@ class CheckoutLine(models.Model):
         "product.ProductVariant", related_name="+", on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    vendor = models.ForeignKey(
+        Vendor,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
     data = JSONField(blank=True, default=dict)
 
     class Meta:

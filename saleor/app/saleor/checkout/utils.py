@@ -67,7 +67,7 @@ def get_checkout_from_request(request, checkout_queryset=Checkout.objects.all())
 
 
 def get_user_checkout(
-    user: User, checkout_queryset=Checkout.objects.all(), auto_create=False
+    user: User, checkout_queryset=Checkout.objects.all(), auto_create=True
 ) -> Tuple[Optional[Checkout], bool]:
     """Return an active checkout for given user or None if no auto create.
 
@@ -119,13 +119,17 @@ def check_variant_in_stock(
         )
 
     if new_quantity > 0 and check_quantity:
-        check_stock_quantity(variant, checkout.get_country(), new_quantity)
+        pass
+        # TODO
+        # hotfix -> otherwhise adding to cart don't work
+        # needed connection between cart's items and vendors
+        # check_stock_quantity(variant, checkout.get_country(), new_quantity)
 
     return new_quantity, line
 
 
 def add_variant_to_checkout(
-    checkout, variant, quantity=1, replace=False, check_quantity=True
+    checkout, variant, quantity=1, replace=False, check_quantity=True, vendor=False
 ):
     """Add a product variant to checkout.
 
@@ -148,7 +152,9 @@ def add_variant_to_checkout(
         if line is not None:
             line.delete()
     elif line is None:
-        checkout.lines.create(checkout=checkout, variant=variant, quantity=new_quantity)
+        # TODO
+        # in data add vendor id or name
+        checkout.lines.create(checkout=checkout, variant=variant, quantity=new_quantity, data={'vendor': vendor})
     elif new_quantity > 0:
         line.quantity = new_quantity
         line.save(update_fields=["quantity"])

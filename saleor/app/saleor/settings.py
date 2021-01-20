@@ -52,7 +52,7 @@ INTERNAL_IPS = get_list(os.environ.get("INTERNAL_IPS", "127.0.0.1"))
 DATABASES = {
     "default": {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'dawid',
+        'USER': 'lb-9',
         'NAME': 'marketplace',
         'PASSWORD': '',
         'HOST': '',

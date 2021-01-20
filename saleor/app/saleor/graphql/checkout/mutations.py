@@ -115,7 +115,11 @@ def check_lines_quantity(variants, quantities, country):
                 }
             )
         try:
-            check_stock_quantity(variant, country, quantity)
+            pass
+            # TODO
+            # hotfix -> otherwhise adding to cart don't work
+            # needed connection between cart's items and vendors
+            # check_stock_quantity(variant, country, quantity)
         except InsufficientStock as e:
             available_quantity = get_available_quantity(e.item, country)
             message = (
@@ -132,6 +136,7 @@ def check_lines_quantity(variants, quantities, country):
 class CheckoutLineInput(graphene.InputObjectType):
     quantity = graphene.Int(required=True, description="The number of items purchased.")
     variant_id = graphene.ID(required=True, description="ID of the product variant.")
+    vendor_name = graphene.String(required=True, description="vendor")
 
 
 class CheckoutCreateInput(graphene.InputObjectType):
@@ -333,14 +338,15 @@ class CheckoutLinesAdd(BaseMutation):
         variant_ids = [line.get("variant_id") for line in lines]
         variants = cls.get_nodes_or_error(variant_ids, "variant_id", ProductVariant)
         quantities = [line.get("quantity") for line in lines]
+        vendors = [line.get("vendor_name") for line in lines]
 
         check_lines_quantity(variants, quantities, checkout.get_country())
 
         if variants and quantities:
-            for variant, quantity in zip(variants, quantities):
+            for variant, quantity, vendor in zip(variants, quantities, vendors):
                 try:
                     add_variant_to_checkout(
-                        checkout, variant, quantity, replace=replace
+                        checkout, variant, quantity, replace=replace, vendor=vendor
                     )
                 except InsufficientStock as exc:
                     raise ValidationError(
