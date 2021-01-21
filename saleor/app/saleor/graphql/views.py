@@ -203,8 +203,6 @@ class GraphQLView(View):
             return None, ExecutionResult(errors=[e], invalid=True)
 
     def execute_graphql_request(self, request: HttpRequest, data: dict):
-        print("higher data")
-        print(data)
         with ot.global_tracer().start_active_span(
             operation_name="graphql_query"
         ) as scope:
@@ -212,8 +210,6 @@ class GraphQLView(View):
             span.set_tag(ot_tags.COMPONENT, "graphql_query")
 
             query, variables, operation_name = self.get_graphql_params(request, data)
-            print("higher variables")
-            print(variables)
             document, error = self.parse_query(query)
             if error:
                 return error
@@ -263,9 +259,6 @@ class GraphQLView(View):
     def get_graphql_params(request: HttpRequest, data: dict):
         query = data.get("query")
         variables = data.get("variables")
-        print("get graph params")
-        print(variables)
-        print(data)
         operation_name = data.get("operationName")
         if operation_name == "null":
             operation_name = None

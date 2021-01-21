@@ -74,6 +74,7 @@ def get_user_checkout(
     If auto create is enabled, it will retrieve an active checkout or create it
     (safer for concurrency).
     """
+    print('creating')
     if auto_create:
         return checkout_queryset.get_or_create(
             user=user,
@@ -152,14 +153,12 @@ def add_variant_to_checkout(
         if line is not None:
             line.delete()
     elif line is None:
-        # TODO
-        # in data add vendor id or name
         checkout.lines.create(checkout=checkout, variant=variant, quantity=new_quantity, vendor_name=vendor)
     elif new_quantity > 0:
         line.quantity = new_quantity
         line.save(update_fields=["quantity"])
 
-    if vendor:
+    if line and vendor:
         line.vendor_name = vendor
         line.save(update_fields=["vendor_name"])
 
