@@ -179,12 +179,7 @@ class CheckoutLine(models.Model):
         "product.ProductVariant", related_name="+", on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    vendor = models.ForeignKey(
-        Vendor,
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE
-    )
+    vendor_name = models.TextField(default=None, blank=True, null=True)
     data = JSONField(blank=True, default=dict)
 
     class Meta:
