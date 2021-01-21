@@ -5,6 +5,7 @@ from django_countries import countries
 from django_prices_vatlayer.models import VAT
 from phonenumbers import COUNTRY_CODE_TO_REGION_CODE
 
+from ..checkout.types import PaymentGateway
 from ...account import models as account_models
 from ...core.permissions import SitePermissions, get_permissions
 from ...core.utils import get_client_ip, get_country_by_ip
@@ -62,6 +63,9 @@ class Geolocalization(graphene.ObjectType):
 
 
 class Shop(graphene.ObjectType):
+    availablePaymentGateways = graphene.Field(
+        PaymentGateway, description="Available payment gateway"
+    )
     geolocalization = graphene.Field(
         Geolocalization, description="Customer's geolocalization data."
     )

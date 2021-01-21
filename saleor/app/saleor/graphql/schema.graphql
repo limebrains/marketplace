@@ -4215,6 +4215,7 @@ type Shop {
   companyAddress: Address
   customerSetPasswordUrl: String
   staffNotificationRecipients: [StaffNotificationRecipient]
+  availablePaymentGateways: [PaymentGateway]!
 }
 
 type ShopAddressUpdate {

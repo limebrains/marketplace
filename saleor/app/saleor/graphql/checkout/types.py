@@ -25,6 +25,7 @@ class GatewayConfigLine(graphene.ObjectType):
 
 
 class PaymentGateway(graphene.ObjectType):
+    id = graphene.ID(description="ID of payment gateway")
     name = graphene.String(required=True, description="Payment gateway name.")
     config = graphene.List(
         graphene.NonNull(GatewayConfigLine),
