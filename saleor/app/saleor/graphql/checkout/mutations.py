@@ -136,7 +136,7 @@ def check_lines_quantity(variants, quantities, country):
 class CheckoutLineInput(graphene.InputObjectType):
     quantity = graphene.Int(required=True, description="The number of items purchased.")
     variant_id = graphene.ID(required=True, description="ID of the product variant.")
-    vendor_name = graphene.String(required=True, description="vendor")
+    vendor_name = graphene.String(required=False, description="vendor")
 
 
 class CheckoutCreateInput(graphene.InputObjectType):

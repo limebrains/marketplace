@@ -129,7 +129,7 @@ def check_variant_in_stock(
 
 
 def add_variant_to_checkout(
-    checkout, variant, quantity=1, replace=False, check_quantity=True, vendor=False
+    checkout, variant, quantity=1, replace=False, check_quantity=True, vendor=None
 ):
     """Add a product variant to checkout.
 
@@ -154,10 +154,14 @@ def add_variant_to_checkout(
     elif line is None:
         # TODO
         # in data add vendor id or name
-        checkout.lines.create(checkout=checkout, variant=variant, quantity=new_quantity, data={'vendor': vendor})
+        checkout.lines.create(checkout=checkout, variant=variant, quantity=new_quantity, vendor_name=vendor)
     elif new_quantity > 0:
         line.quantity = new_quantity
         line.save(update_fields=["quantity"])
+
+    if vendor:
+        line.vendor_name = vendor
+        line.save(update_fields=["vendor_name"])
 
     update_checkout_quantity(checkout)
 

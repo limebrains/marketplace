@@ -235,9 +235,6 @@ class GraphQLView(View):
                 extra_options["executor"] = self.executor
             try:
                 with connection.execute_wrapper(tracing_wrapper):
-                    print(variables)
-                    if 'lines' in variables.keys():
-                        variables['lines'][0]['vendorName'] = 'Sample Vendor 1'
                     return document.execute(  # type: ignore
                         root=self.get_root_value(),
                         variables=variables,
