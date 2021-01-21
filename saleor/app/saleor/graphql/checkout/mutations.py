@@ -92,9 +92,9 @@ def update_checkout_shipping_method_if_invalid(checkout: models.Checkout, discou
         checkout.save(update_fields=["shipping_method", "last_change"])
 
 
-def check_lines_quantity(variants, quantities, country):
+def check_lines_quantity(variants, quantities, vendors, country):
     """Check if stock is sufficient for each line in the list of dicts."""
-    for variant, quantity in zip(variants, quantities):
+    for variant, quantity, vendor in zip(variants, quantities, vendors):
         if quantity < 0:
             raise ValidationError(
                 {
@@ -115,13 +115,10 @@ def check_lines_quantity(variants, quantities, country):
                 }
             )
         try:
-            pass
-            # TODO
-            # hotfix -> otherwhise adding to cart don't work
-            # needed connection between cart's items and vendors
-            # check_stock_quantity(variant, country, quantity)
+            if vendor:
+                check_stock_quantity(variant, country, quantity, vendor)
         except InsufficientStock as e:
-            available_quantity = get_available_quantity(e.item, country)
+            available_quantity = get_available_quantity(e.item, country, vendor)
             message = (
                 "Could not add item "
                 + "%(item_name)s. Only %(remaining)d remaining in stock."
@@ -340,7 +337,7 @@ class CheckoutLinesAdd(BaseMutation):
         quantities = [line.get("quantity") for line in lines]
         vendors = [line.get("vendor_name") for line in lines]
 
-        check_lines_quantity(variants, quantities, checkout.get_country())
+        check_lines_quantity(variants, quantities, vendors, checkout.get_country())
 
         if variants and quantities:
             for variant, quantity, vendor in zip(variants, quantities, vendors):

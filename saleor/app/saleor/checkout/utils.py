@@ -106,7 +106,7 @@ def update_checkout_quantity(checkout):
 
 
 def check_variant_in_stock(
-    checkout, variant, quantity=1, replace=False, check_quantity=True
+    checkout, variant, vendor, quantity=1, replace=False, check_quantity=True
 ) -> Tuple[int, Optional[CheckoutLine]]:
     """Check if a given variant is in stock and return the new quantity + line."""
     line = checkout.lines.filter(variant=variant).first()
@@ -119,12 +119,8 @@ def check_variant_in_stock(
             "%r is not a valid quantity (results in %r)" % (quantity, new_quantity)
         )
 
-    if new_quantity > 0 and check_quantity:
-        pass
-        # TODO
-        # hotfix -> otherwhise adding to cart don't work
-        # needed connection between cart's items and vendors
-        # check_stock_quantity(variant, checkout.get_country(), new_quantity)
+    if new_quantity > 0 and check_quantity and vendor:
+        check_stock_quantity(variant, checkout.get_country(), new_quantity, vendor)
 
     return new_quantity, line
 
@@ -141,6 +137,7 @@ def add_variant_to_checkout(
     new_quantity, line = check_variant_in_stock(
         checkout,
         variant,
+        vendor,
         quantity=quantity,
         replace=replace,
         check_quantity=check_quantity,
