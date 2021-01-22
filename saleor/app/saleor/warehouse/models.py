@@ -17,7 +17,7 @@ class WarehouseQueryset(models.QuerySet):
         return self.select_related("address").prefetch_related("shipping_zones")
 
     def for_country(self, country: str, vendor):
-        return self.prefetch_data().get(shipping_zones__countries__contains=country, vendor__name=vendor)
+        return self.prefetch_data().get(shipping_zones__countries__contains=country, vendor__slug=vendor)
 
 
 class Warehouse(models.Model):
@@ -60,7 +60,7 @@ class StockQuerySet(models.QuerySet):
     def for_country(self, country_code: str, vendor):
         warehouse_queryset = {}
         if vendor:
-            warehouse_queryset["vendor__name"] = vendor
+            warehouse_queryset["vendor__slug"] = vendor
         if country_code:
             warehouse_queryset["shipping_zones__countries__contains"] = country_code
         query_warehouse = models.Subquery(

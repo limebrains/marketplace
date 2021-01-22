@@ -276,7 +276,6 @@ class ProductVariant(CountableDjangoObjectType):
 
     @staticmethod
     def resolve_stocks(root: models.ProductVariant, info, country_code=None, vendor=None):
-        print('DUPA', country_code, vendor)
         if not country_code:
             return gql_optimizer.query(
                 root.stocks.annotate_available_quantity().for_country(country_code, vendor).all(), info
