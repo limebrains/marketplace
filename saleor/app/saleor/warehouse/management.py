@@ -10,10 +10,10 @@ if TYPE_CHECKING:
 
 @transaction.atomic
 def allocate_stock(
-    variant: "ProductVariant", country_code: str, quantity: int, commit: bool = True
+    variant: "ProductVariant", country_code: str, quantity: int, vendor: str, commit: bool = True
 ) -> Stock:
     stock = Stock.objects.select_for_update(of=("self",)).get_variant_stock_for_country(
-        country_code, variant
+        country_code, variant, vendor
     )
     stock.allocate_stock(quantity, commit=commit)
     return stock

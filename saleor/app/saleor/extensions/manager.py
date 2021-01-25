@@ -324,6 +324,7 @@ class ExtensionsManager(PaymentInterface):
         **kwargs,
     ) -> "GatewayResponse":
         default_value = None
+        gateway = gateway.split('.')[-1].capitalize()
         gtw = self.get_plugin(gateway)
         if gtw is not None:
             resp = self.__run_method_on_single_plugin(
