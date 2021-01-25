@@ -43,7 +43,8 @@ def resolve_global_ids_to_primary_keys(ids, graphene_type=None):
 
         try:
             node_type, _id = from_global_id(graphql_id)
-        except Exception:
+        except Exception as e:
+            print(f"---\nerror in resolve_global_ids_to_primary_keys:\n{e}\n---")
             invalid_ids.append(graphql_id)
             continue
 

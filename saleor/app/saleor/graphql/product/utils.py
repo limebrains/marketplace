@@ -103,20 +103,17 @@ def get_used_variants_attribute_values(product, vendor):
 
 
 @transaction.atomic
-def create_stocks(
+def update_or_create_stocks(
     variant: "ProductVariant", stocks_data: List[Dict[str, str]], warehouses: "QuerySet"
 ):
     try:
-        Stock.objects.bulk_create(
-            [
-                Stock(
+        for stock_data, warehouse in zip(stocks_data, warehouses):
+            Stock.objects.update_or_create(
+                    defaults=dict(quantity=stock_data["quantity"]),
                     product_variant=variant,
                     warehouse=warehouse,
-                    quantity=stock_data["quantity"],
                 )
-                for stock_data, warehouse in zip(stocks_data, warehouses)
-            ]
-        )
-    except IntegrityError:
+    except IntegrityError as e:
+        print(f"---\nerror in update_or_create_stocks:\n{e}\n---")
         msg = "Stock for one of warehouses already exists for this product variant."
         raise ValidationError(msg)

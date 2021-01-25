@@ -54,6 +54,7 @@ class Warehouse(CountableDjangoObjectType):
             "company_name",
             "shipping_zones",
             "address",
+            "vendor",
             "email",
         ]
 

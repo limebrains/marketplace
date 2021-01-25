@@ -34,7 +34,7 @@ from ..mutations.products import (
     StockInput,
 )
 from ..types import ProductVariant
-from ..utils import create_stocks, get_used_variants_attribute_values
+from ..utils import update_or_create_stocks, get_used_variants_attribute_values
 
 
 class CategoryBulkDelete(ModelBulkDeleteMutation):
@@ -337,7 +337,7 @@ class ProductVariantStocksCreate(BaseMutation):
         warehouses = cls.clean_stocks_input(variant, stocks, errors)
         if errors:
             raise ValidationError(errors)
-        create_stocks(variant, stocks, warehouses)
+        update_or_create_stocks(variant, stocks, warehouses)
         return cls(product_variant=variant)
 
     @classmethod

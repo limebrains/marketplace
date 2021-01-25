@@ -16,7 +16,7 @@ class WarehouseQueryset(models.QuerySet):
     def prefetch_data(self):
         return self.select_related("address").prefetch_related("shipping_zones")
 
-    def for_country(self, country: str, vendor):
+    def for_country(self, country: str, vendor: str):
         return self.prefetch_data().get(shipping_zones__countries__contains=country, vendor__slug=vendor)
 
 

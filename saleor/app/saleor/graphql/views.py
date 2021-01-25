@@ -240,6 +240,7 @@ class GraphQLView(View):
                         **extra_options,
                     )
             except Exception as e:
+                print(f"---\nerror in execute_graphql_request:\n{e}\n---")
                 span.set_tag(ot_tags.ERROR, True)
                 return ExecutionResult(errors=[e], invalid=True)
 

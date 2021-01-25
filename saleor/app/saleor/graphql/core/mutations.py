@@ -191,6 +191,7 @@ class BaseMutation(graphene.Mutation):
         try:
             instances = get_nodes(ids, only_type, qs=qs)
         except GraphQLError as e:
+            print(f"---\nerror in get_nodes_or_error:\n{e}\n---")
             raise ValidationError(
                 {field: ValidationError(str(e), code="graphql_error")}
             )

@@ -45,7 +45,7 @@ from ...meta.deprecated.mutations import ClearMetaBaseMutation, UpdateMetaBaseMu
 from ...warehouse.types import Warehouse
 from ..types import Category, Collection, Product, ProductImage, ProductVariant
 from ..utils import (
-    create_stocks,
+    update_or_create_stocks,
     get_used_attibute_values_for_variant,
     get_used_variants_attribute_values,
     validate_attribute_input_for_product,
@@ -964,7 +964,7 @@ class ProductCreate(ModelMutation):
             if stocks:
                 cls.create_variant_stocks(variant, stocks)
             elif quantity:  # DEPRECATED: Will be removed in 2.11 (issue #5325)
-                set_stock_quantity(variant, info.context.country, info.context.user.vendor.name, quantity)
+                set_stock_quantity(variant, info.context.country, info.context.user.vendor.slug, quantity)
 
         attributes = cleaned_input.get("attributes")
         if attributes:
@@ -976,7 +976,7 @@ class ProductCreate(ModelMutation):
         warehouses = cls.get_nodes_or_error(
             warehouse_ids, "warehouse", only_type=Warehouse
         )
-        create_stocks(variant, stocks, warehouses)
+        update_or_create_stocks(variant, stocks, warehouses)
 
     @classmethod
     def _save_m2m(cls, info, instance, cleaned_data):
@@ -1111,6 +1111,11 @@ class ProductVariantInput(graphene.InputObjectType):
     cost_price = Decimal(description="Cost price of the variant.")
     price_override = Decimal(description="Special price of the particular variant.")
     sku = graphene.String(description="Stock keeping unit.")
+    stocks = graphene.List(
+        StockInput,
+        description="Stocks of product variant to update"
+    )
+    # TODO remove quantity
     quantity = graphene.Int(
         description="The total quantity of this variant available for sale.",
         deprecation_reason=(
@@ -1280,8 +1285,7 @@ class ProductVariantCreate(ModelMutation):
         if stocks:
             cls.create_variant_stocks(instance, stocks)
         elif quantity:  # DEPRECATED: Will be removed in 2.11 (issue #5325)
-            set_stock_quantity(instance, info.context.country, info.context.user.vendor.name, quantity)
-
+            set_stock_quantity(instance, info.context.country, info.context.user.vendor.slug, quantity)
         attributes = cleaned_input.get("attributes")
         if attributes:
             AttributeAssignmentMixin.save(instance, attributes)
@@ -1294,13 +1298,16 @@ class ProductVariantCreate(ModelMutation):
         warehouses = cls.get_nodes_or_error(
             warehouse_ids, "warehouse", only_type=Warehouse
         )
-        create_stocks(variant, stocks, warehouses)
+        update_or_create_stocks(variant, stocks, warehouses)
 
 
 class ProductVariantUpdate(ProductVariantCreate):
     class Arguments:
         id = graphene.ID(
             required=True, description="ID of a product variant to update."
+        )
+        vendor = graphene.String(
+            required=True, description="Vendor of this product variant"
         )
         input = ProductVariantInput(
             required=True, description="Fields required to update a product variant."
