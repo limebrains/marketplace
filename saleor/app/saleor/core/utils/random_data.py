@@ -464,7 +464,7 @@ def create_order_lines(order, discounts, how_many=10):
         product = variant.product
         quantity = random.randrange(1, 5)
         stocks.append(
-            increase_stock(variant, country, quantity, allocate=True, commit=False)
+            increase_stock(variant, country, "Sample Vendor 1", quantity, allocate=True, commit=False)
         )
         unit_price = variant.get_price(discounts)
         unit_price = TaxedMoney(net=unit_price, gross=unit_price)

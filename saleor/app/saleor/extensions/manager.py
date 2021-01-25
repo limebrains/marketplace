@@ -306,7 +306,7 @@ class ExtensionsManager(PaymentInterface):
     def list_payment_gateways(self, active_only: bool = True) -> List[dict]:
         payment_plugins = self.list_payment_plugin_names(active_only=active_only)
         return [
-            {"name": plugin_name, "config": self.__get_payment_config(plugin_name)}
+            {"name": plugin_name, "id": plugin_name, "config": self.__get_payment_config(plugin_name)}
             for plugin_name in payment_plugins
         ]
 

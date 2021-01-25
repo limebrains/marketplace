@@ -9,6 +9,7 @@ from ..checkout.types import PaymentGateway
 from ...account import models as account_models
 from ...core.permissions import SitePermissions, get_permissions
 from ...core.utils import get_client_ip, get_country_by_ip
+from ...extensions.manager import get_extensions_manager
 from ...menu import models as menu_models
 from ...product import models as product_models
 from ...site import models as site_models
@@ -63,7 +64,7 @@ class Geolocalization(graphene.ObjectType):
 
 
 class Shop(graphene.ObjectType):
-    availablePaymentGateways = graphene.Field(
+    available_payment_gateways = graphene.List(
         PaymentGateway, description="Available payment gateway"
     )
     geolocalization = graphene.Field(
@@ -197,6 +198,10 @@ class Shop(graphene.ObjectType):
                 country=CountryDisplay(code=country.code, country=country.name)
             )
         return Geolocalization(country=None)
+
+    @staticmethod
+    def resolve_available_payment_gateways(_, _info):
+        return [gtw for gtw in get_extensions_manager().list_payment_gateways()]
 
     @staticmethod
     def resolve_default_currency(_, _info):
