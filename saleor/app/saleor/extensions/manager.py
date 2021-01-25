@@ -306,7 +306,7 @@ class ExtensionsManager(PaymentInterface):
     def list_payment_gateways(self, active_only: bool = True) -> List[dict]:
         payment_plugins = self.list_payment_plugin_names(active_only=active_only)
         return [
-            {"name": plugin_name, "config": self.__get_payment_config(plugin_name)}
+            {"name": plugin_name, "id": plugin_name, "config": self.__get_payment_config(plugin_name)}
             for plugin_name in payment_plugins
         ]
 
@@ -324,6 +324,7 @@ class ExtensionsManager(PaymentInterface):
         **kwargs,
     ) -> "GatewayResponse":
         default_value = None
+        gateway = gateway.split('.')[-1].capitalize()
         gtw = self.get_plugin(gateway)
         if gtw is not None:
             resp = self.__run_method_on_single_plugin(

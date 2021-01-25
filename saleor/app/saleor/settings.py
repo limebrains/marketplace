@@ -2,9 +2,7 @@ import ast
 import os.path
 import warnings
 
-import dj_database_url
 import dj_email_url
-import jaeger_client
 import jaeger_client.config
 import sentry_sdk
 from django.contrib.messages import constants as messages
@@ -546,6 +544,23 @@ GRAPHENE = {
 
 EXTENSIONS_MANAGER = "saleor.extensions.manager.ExtensionsManager"
 
+# TODO
+# "saleor.payment.gateways.braintree.plugin.BraintreeGatewayPlugin"
+# problems with config
+
+PAYMENT_GATEWAYS = {
+    'braintree': {
+        'module': 'saleor.payment.gateways.braintree',
+        'connection_params': {
+            'sandbox_mode': get_bool_from_env('BRAINTREE_SANDBOX_MODE', True),
+            'merchant_id': os.environ.get('BRAINTREE_MERCHANT_ID', "7qnb3dqfqbbmpzw3"),
+            'public_key': os.environ.get('BRAINTREE_PUBLIC_KEY', "kb3jdppv6m928m9y"),
+            'private_key': os.environ.get('BRAINTREE_PRIVATE_KEY', "af8f97472266205e057de7e3cf9fb317")
+        }
+    }
+}
+
+
 PLUGINS = [
     "saleor.extensions.plugins.avatax.plugin.AvataxPlugin",
     "saleor.extensions.plugins.vatlayer.plugin.VatlayerPlugin",
@@ -553,7 +568,6 @@ PLUGINS = [
     "saleor.payment.gateways.dummy.plugin.DummyGatewayPlugin",
     "saleor.payment.gateways.stripe.plugin.StripeGatewayPlugin",
     "saleor.payment.gateways.braintree.plugin.BraintreeGatewayPlugin",
-    "saleor.payment.gateways.razorpay.plugin.RazorpayGatewayPlugin",
 ]
 
 # Whether DraftJS should be used be used instead of HTML
