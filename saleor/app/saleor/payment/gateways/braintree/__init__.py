@@ -86,7 +86,17 @@ def extract_gateway_response(braintree_result) -> Dict:
     }
 
 
-def get_braintree_gateway(sandbox_mode, merchant_id, public_key, private_key):
+# https://sandbox.braintreegateway.com/
+# login: brainslime
+# password: limebrains2021
+
+
+def get_braintree_gateway(
+        sandbox_mode=True,
+        merchant_id="7qnb3dqfqbbmpzw3",
+        public_key="kb3jdppv6m928m9y",
+        private_key="af8f97472266205e057de7e3cf9fb317"
+):
     if not all([merchant_id, private_key, public_key]):
         raise ImproperlyConfigured("Incorrectly configured Braintree gateway.")
     environment = braintree_sdk.Environment.Sandbox
@@ -104,9 +114,10 @@ def get_braintree_gateway(sandbox_mode, merchant_id, public_key, private_key):
 
 
 def get_client_token(
-    config: GatewayConfig, token_config: Optional[TokenConfig] = None
+        config: GatewayConfig, token_config: Optional[TokenConfig] = None
 ) -> str:
-    gateway = get_braintree_gateway(**config.connection_params)
+    print(config)
+    gateway = get_braintree_gateway()
     if not token_config:
         return gateway.client_token.generate()
     parameters = create_token_params(config, token_config)
@@ -122,7 +133,7 @@ def create_token_params(config: GatewayConfig, token_config: TokenConfig) -> dic
 
 
 def authorize(
-    payment_information: PaymentData, config: GatewayConfig
+        payment_information: PaymentData, config: GatewayConfig
 ) -> GatewayResponse:
     try:
         if not payment_information.customer_id:
@@ -151,9 +162,9 @@ def authorize(
 
 
 def transaction_for_new_customer(
-    payment_information: PaymentData, config: GatewayConfig
+        payment_information: PaymentData, config: GatewayConfig
 ):
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
     return gateway.transaction.sale(
         {
             "amount": str(payment_information.amount),
@@ -169,9 +180,9 @@ def transaction_for_new_customer(
 
 
 def transaction_for_existing_customer(
-    payment_information: PaymentData, config: GatewayConfig
+        payment_information: PaymentData, config: GatewayConfig
 ):
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
     return gateway.transaction.sale(
         {
             "amount": str(payment_information.amount),
@@ -183,7 +194,7 @@ def transaction_for_existing_customer(
 
 
 def capture(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
 
     try:
         result = gateway.transaction.submit_for_settlement(
@@ -211,7 +222,7 @@ def capture(payment_information: PaymentData, config: GatewayConfig) -> GatewayR
 
 
 def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
 
     try:
         result = gateway.transaction.void(transaction_id=payment_information.token)
@@ -236,7 +247,7 @@ def void(payment_information: PaymentData, config: GatewayConfig) -> GatewayResp
 
 
 def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayResponse:
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
 
     try:
         result = gateway.transaction.refund(
@@ -264,16 +275,16 @@ def refund(payment_information: PaymentData, config: GatewayConfig) -> GatewayRe
 
 
 def process_payment(
-    payment_information: PaymentData, config: GatewayConfig
+        payment_information: PaymentData, config: GatewayConfig
 ) -> GatewayResponse:
     auth_resp = authorize(payment_information, config)
     return auth_resp
 
 
 def list_client_sources(
-    config: GatewayConfig, customer_id: str
+        config: GatewayConfig, customer_id: str
 ) -> List[CustomerSource]:
-    gateway = get_braintree_gateway(**config.connection_params)
+    gateway = get_braintree_gateway()
     customer = gateway.customer.find(customer_id)
     if not customer:
         return []
