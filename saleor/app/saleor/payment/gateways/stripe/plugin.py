@@ -62,6 +62,10 @@ class StripeGatewayPlugin(BasePlugin):
         super().__init__(*args, **kwargs)
         self.config = None
 
+    # https://dashboard.stripe.com/test/dashboard
+    # login: jozef.zienowicz@limebrains.com
+    # password: dupa2021dupa
+
     def _initialize_plugin_configuration(self):
         super()._initialize_plugin_configuration()
 
@@ -73,8 +77,8 @@ class StripeGatewayPlugin(BasePlugin):
                 gateway_name=GATEWAY_NAME,
                 auto_capture=configuration["Automatic payment capture"],
                 connection_params={
-                    "public_key": configuration["Public API key"],
-                    "private_key": configuration["Secret API key"],
+                    "public_key": "pk_test_51IDVY0FZYBryk7gYqZnIN4PCHCp1aGwv7q2EaldpLxOUBeAWzuGDfqeyNTlg4zxbqMnCaYWiIIEE4tfLaAY8aqvI00xl882UX9",
+                    "private_key": "sk_test_51IDVY0FZYBryk7gY3U8k0KTXz0mbuLR0XUF5vA5XKOE6yhi1subZ7iTiFWCJOn5YX8xKuBoDX7bjmL8lmeYUm9v700EeRDiUvh",
                 },
                 store_customer=configuration["Store customers card"],
             )

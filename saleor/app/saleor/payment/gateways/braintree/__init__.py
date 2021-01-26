@@ -116,7 +116,6 @@ def get_braintree_gateway(
 def get_client_token(
         config: GatewayConfig, token_config: Optional[TokenConfig] = None
 ) -> str:
-    print(config)
     gateway = get_braintree_gateway()
     if not token_config:
         return gateway.client_token.generate()
