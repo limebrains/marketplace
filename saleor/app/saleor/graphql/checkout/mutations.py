@@ -146,6 +146,7 @@ class CheckoutCreateInput(graphene.InputObjectType):
         ),
         required=True,
     )
+    user_id = graphene.String(description="The customer's identifier")
     email = graphene.String(description="The customer's email address.")
     shipping_address = AddressInput(
         description=(
@@ -302,9 +303,14 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             checkout = models.Checkout()
 
         cleaned_input = cls.clean_input(info, checkout, data.get("input"))
-        if 'email' in cleaned_input.keys():
-            user = UserModel._default_manager.get(email=cleaned_input['email'])
-            cleaned_input['user'] = user
+        if 'user_id' in cleaned_input.keys():
+            user = UserModel._default_manager.get(pk=cleaned_input['user_id'])
+            user_checkout, _ = get_user_checkout(user=user, auto_create=False)
+            if not user_checkout:
+                cleaned_input['user'] = user
+            else:
+                return CheckoutCreate(checkout=user_checkout, created=False)
+            cleaned_input.pop('user_id', None)
         checkout = cls.construct_instance(checkout, cleaned_input)
         cls.clean_instance(info, checkout)
         cls.save(info, checkout, cleaned_input)
@@ -344,7 +350,7 @@ class CheckoutLinesAdd(BaseMutation):
 
         check_lines_quantity(variants, quantities, vendors, checkout.get_country())
 
-        if variants and quantities:
+        if variants and quantities and vendors:
             for variant, quantity, vendor in zip(variants, quantities, vendors):
                 try:
                     add_variant_to_checkout(
