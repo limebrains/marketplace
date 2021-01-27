@@ -2,6 +2,7 @@ from typing import List, Optional, Tuple
 
 import graphene
 from django.conf import settings
+from django.contrib.auth.backends import UserModel
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import transaction
 from django.db.models import Prefetch
@@ -192,8 +193,9 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             ),
         )
         quantities = [line.get("quantity") for line in lines]
+        vendors = [line.get("vendor") for line in lines]
 
-        check_lines_quantity(variants, quantities, country)
+        check_lines_quantity(variants, quantities, vendors, country)
 
         return variants, quantities
 
@@ -300,6 +302,9 @@ class CheckoutCreate(ModelMutation, I18nMixin):
             checkout = models.Checkout()
 
         cleaned_input = cls.clean_input(info, checkout, data.get("input"))
+        if 'email' in cleaned_input.keys():
+            user = UserModel._default_manager.get(email=cleaned_input['email'])
+            cleaned_input['user'] = user
         checkout = cls.construct_instance(checkout, cleaned_input)
         cls.clean_instance(info, checkout)
         cls.save(info, checkout, cleaned_input)
