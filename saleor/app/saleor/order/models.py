@@ -126,7 +126,7 @@ class Order(ModelWithMetadata):
         currency_field="currency",
     )
 
-    token = models.CharField(max_length=36, unique=True, blank=True)
+    token = models.CharField(max_length=36, blank=True)
     # Token of a checkout instance that this order was created from
     checkout_token = models.CharField(max_length=36, blank=True)
 
@@ -151,7 +151,7 @@ class Order(ModelWithMetadata):
         gross_amount_field="total_gross_amount",
         currency_field="currency",
     )
-    vendors = models.ForeignKey(
+    vendor = models.ForeignKey(
         Vendor,
         verbose_name='orders',
         blank=True,
@@ -392,6 +392,7 @@ class OrderLine(models.Model):
     tax_rate = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal("0.0")
     )
+    vendor_name = models.TextField(default=None, null=True)
 
     objects = OrderLineQueryset.as_manager()
 

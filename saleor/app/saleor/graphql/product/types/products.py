@@ -621,7 +621,7 @@ class Product(CountableDjangoObjectType):
     def resolve_variants(root: models.Product, info, *_args, **_kwargs):
         user = info.context.user
         if not user.is_superuser and user.is_authenticated:
-            return root.variants.filter(vendors__admin_account=user)
+            return root.variants.filter(vendor__admin_account=user)
         return root.variants.all()
 
     @staticmethod

@@ -159,7 +159,7 @@ def resolve_products(
     user = get_user_or_service_account_from_context(info.context)
     qs = models.Product.objects.visible_to_user(user)
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(variants__vendors__admin_account=user)
+        qs = qs.filter(variants__vendor__admin_account=user)
     qs = sort_products(qs, sort_by)
 
     if query:
@@ -230,9 +230,9 @@ def resolve_product_variants(info, ids=None, vendors=None):
     )
     qs = models.ProductVariant.objects.filter(product__id__in=visible_products)
     if not user.is_superuser and user.is_authenticated and not vendors:
-        qs = qs.filter(vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     if vendors:
-        qs = qs.filter(vendors__name=vendors)
+        qs = qs.filter(vendor__name=vendors)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariant") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)
@@ -246,7 +246,7 @@ def resolve_product_variants_vendor_listing(info, ids=None):
     # )
     qs = models.ProductVariantVendorListing.objects.all()
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     if ids:
         db_ids = [get_database_id(info, node_id, "ProductVariantVendorListing") for node_id in ids]
         qs = qs.filter(pk__in=db_ids)

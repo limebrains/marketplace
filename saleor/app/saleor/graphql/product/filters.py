@@ -113,11 +113,11 @@ def filter_products_by_collections(qs, collections):
 
 
 def filter_products_by_vendors(qs, vendors):
-    return qs.filter(variants__vendors__name__in=vendors)
+    return qs.filter(variants__vendor__name__in=vendors)
 
 
 def filter_product_variants_by_vendors(qs, vendors):
-    return qs.filter(vendors__name__in=vendors)
+    return qs.filter(vendor__name__in=vendors)
 
 
 def filter_categories_by_vendors(qs, _, vendor):
@@ -171,13 +171,13 @@ def filter_collections(qs, _, value):
 
 def filter_vendors(qs, _, value):
     if value:
-        qs = qs.filter(variants__vendors__slug=value)
+        qs = qs.filter(variants__vendor__slug=value)
     return qs
 
 
 def filter_variant_vendors(qs, _, value):
     if value:
-        qs = qs.filter(vendors__name=value)
+        qs = qs.filter(vendor__name=value)
     return qs
 
 

@@ -346,7 +346,7 @@ class User(CountableDjangoObjectType):
         viewer = info.context.user
         if viewer.has_perm(OrderPermissions.MANAGE_ORDERS):
             if not viewer.is_superuser:
-                return root.orders.filter(vendors__admin_account=viewer)
+                return root.orders.filter(vendor__admin_account=viewer)
             return root.orders.all()
         return root.orders.confirmed()
 

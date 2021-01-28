@@ -36,7 +36,7 @@ def resolve_orders(info, created, status, query, sort_by=None):
     user = info.context.user
     qs = models.Order.objects.confirmed()
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     qs = sort_queryset(qs, sort_by, OrderSortField)
     return filter_orders(qs, info, created, status, query)
 
@@ -45,7 +45,7 @@ def resolve_draft_orders(info, created, query, sort_by=None):
     user = info.context.user
     qs = models.Order.objects.drafts()
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     qs = sort_queryset(qs, sort_by, OrderSortField)
     return filter_orders(qs, info, created, None, query)
 
@@ -54,7 +54,7 @@ def resolve_orders_total(_info, period):
     user = _info.context.user
     qs = models.Order.objects.confirmed().exclude(status=OrderStatus.CANCELED)
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(vendors__admin_account=user)
+        qs = qs.filter(vendor__admin_account=user)
     qs = filter_by_period(qs, period, "created")
     return sum_order_totals(qs)
 

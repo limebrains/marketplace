@@ -317,7 +317,7 @@ class Product(SeoModel, ModelWithMetadata, PublishableModel):
         qs = Product.objects.all()
         if not store_id:
             return qs
-        return qs.filter(variants__vendors__contains=store_id)
+        return qs.filter(variants__vendor__contains=store_id)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -458,7 +458,7 @@ class ProductVariant(ModelWithMetadata):
         qs = ProductVariant.objects.all()
         if not store_id:
             return qs
-        return qs.filter(vendors__contains=store_id)
+        return qs.filter(vendor__contains=store_id)
 
     @property
     def is_visible(self) -> bool:

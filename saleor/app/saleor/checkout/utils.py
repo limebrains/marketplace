@@ -40,6 +40,7 @@ from ..order.actions import order_created
 from ..order.emails import send_order_confirmation, send_staff_order_confirmation
 from ..order.models import Order, OrderLine
 from ..shipping.models import ShippingMethod
+from ..vendor.models import Vendor
 from ..warehouse.availability import check_stock_quantity
 from ..warehouse.management import allocate_stock
 from . import AddressType
@@ -74,7 +75,6 @@ def get_user_checkout(
     If auto create is enabled, it will retrieve an active checkout or create it
     (safer for concurrency).
     """
-    print('creating')
     if auto_create:
         return checkout_queryset.get_or_create(
             user=user,
@@ -610,7 +610,9 @@ def create_line_for_order(checkout_line: "CheckoutLine", discounts) -> OrderLine
     variant = checkout_line.variant
     product = variant.product
     country = checkout_line.checkout.get_country()
-    check_stock_quantity(variant, country, quantity, checkout_line.vendor_name)
+    vendor_slug = checkout_line.vendor_name
+
+    check_stock_quantity(variant, country, quantity, vendor_slug)
 
     product_name = str(product)
     variant_name = str(variant)
@@ -645,6 +647,7 @@ def create_line_for_order(checkout_line: "CheckoutLine", discounts) -> OrderLine
         variant=variant,
         unit_price=unit_price,  # type: ignore
         tax_rate=tax_rate,
+        vendor_name=vendor_slug
     )
 
     return line
@@ -723,40 +726,49 @@ def create_order(
     which language to use when sending email.
     """
     from ..order.utils import add_gift_card_to_order
+    vendors_names_list = list(set([line.vendor_name for line in order_data['lines']]))
 
     order = Order.objects.filter(checkout_token=checkout.token).first()
     if order is not None:
         return order
 
-    total_price_left = order_data.pop("total_price_left")
-    order_lines = order_data.pop("lines")
+    for vendor_name in vendors_names_list:
+        total_price_left = order_data.pop("total_price_left")
+        all_order_lines = order_data.pop('lines')
+        vendor_order_lines = [line for line in all_order_lines if line.vendor_name == vendor_name]
 
-    order = Order.objects.create(**order_data, checkout_token=checkout.token)
-    order.lines.set(order_lines, bulk=False)
+        order = Order.objects.create(**order_data, checkout_token=checkout.token)
+        order_data['lines'] = all_order_lines
+        order.lines.set(vendor_order_lines, bulk=False)
+        vendor = Vendor.objects.get(slug=vendor_name)
+        order.vendor_id = vendor
 
-    # allocate stocks from the lines
-    for line in order_lines:  # type: OrderLine
-        variant = line.variant
-        if variant and variant.track_inventory:
-            allocate_stock(variant, checkout.get_country(), line.quantity)
 
-    # Add gift cards to the order
-    for gift_card in checkout.gift_cards.select_for_update():
-        total_price_left = add_gift_card_to_order(order, gift_card, total_price_left)
+        # allocate stocks from the lines
+        for line in vendor_order_lines:  # type: OrderLine
+            variant = line.variant
+            if variant and variant.track_inventory:
+                allocate_stock(variant, checkout.get_country(), line.quantity, line.vendor_name)
 
-    # assign checkout payments to the order
-    checkout.payments.update(order=order)
 
-    # copy metadata from the checkout into the new order
-    order.metadata = checkout.metadata
-    order.private_metadata = checkout.private_metadata
-    order.save()
+        # Add gift cards to the order
+        for gift_card in checkout.gift_cards.select_for_update():
+            total_price_left = add_gift_card_to_order(order, gift_card, total_price_left)
 
-    order_created(order=order, user=user)
+        # assign checkout payments to the order
+        checkout.payments.update(order=order)
 
-    # Send the order confirmation email
-    send_order_confirmation.delay(order.pk, redirect_url, user.pk)
-    send_staff_order_confirmation.delay(order.pk, redirect_url)
+
+        # copy metadata from the checkout into the new order
+        order.metadata = checkout.metadata
+        order.private_metadata = checkout.private_metadata
+        order.save()
+
+        order_created(order=order, user=user)
+
+        # Send the order confirmation email
+        send_order_confirmation.delay(order.pk, redirect_url, user.pk)
+        send_staff_order_confirmation.delay(order.pk, redirect_url)
 
     return order
 
