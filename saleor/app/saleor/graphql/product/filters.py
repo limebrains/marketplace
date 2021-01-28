@@ -171,7 +171,7 @@ def filter_collections(qs, _, value):
 
 def filter_vendors(qs, _, value):
     if value:
-        qs = qs.filter(variants__vendor__slug=value)
+        qs = qs.filter(variants__vendors__slug=value)
     return qs
 
 
