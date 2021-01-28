@@ -544,9 +544,6 @@ GRAPHENE = {
 
 EXTENSIONS_MANAGER = "saleor.extensions.manager.ExtensionsManager"
 
-# TODO
-# "saleor.payment.gateways.braintree.plugin.BraintreeGatewayPlugin"
-# problems with config
 
 PAYMENT_GATEWAYS = {
     'braintree': {
