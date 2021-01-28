@@ -159,7 +159,7 @@ def resolve_products(
     user = get_user_or_service_account_from_context(info.context)
     qs = models.Product.objects.visible_to_user(user)
     if not user.is_superuser and user.is_authenticated:
-        qs = qs.filter(variants__vendor__admin_account=user)
+        qs = qs.filter(variants__vendors__admin_account=user)
     qs = sort_products(qs, sort_by)
 
     if query:
@@ -170,7 +170,7 @@ def resolve_products(
         qs = filter_products_by_attributes(qs, attributes)
 
     if vendor:
-        qs = filter_vendors(qs, vendor)
+        qs = filter_vendors(qs, None, vendor)
 
     if vendors:
         qs = filter_products_by_vendors(qs, vendors)
