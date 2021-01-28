@@ -179,7 +179,7 @@ def add_variant_to_order(
     """
     country = get_order_country(order)
     if not allow_overselling:
-        check_stock_quantity(variant, country, quantity)
+        check_stock_quantity(variant, country, quantity, order.vendor.slug)
 
     try:
         line = order.lines.get(variant=variant)
@@ -222,7 +222,7 @@ def add_variant_to_order(
         )
 
     if variant.track_inventory and track_inventory:
-        allocate_stock(variant, country, quantity)
+        allocate_stock(variant, country, quantity, order.vendor.slug)
     return line
 
 

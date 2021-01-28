@@ -168,8 +168,8 @@ class DraftOrderCreate(ModelMutation, I18nMixin):
         user = info.context.user
         if not user.is_superuser and user.is_authenticated:
             vendor = Vendor.objects.get(admin_account=user)
-            instance.vendors = vendor
-        instance.save(update_fields=["billing_address", "shipping_address", "vendors"])
+            instance.vendor = vendor
+        instance.save(update_fields=["billing_address", "shipping_address", "vendor"])
 
     @classmethod
     def _refresh_lines_unit_price(cls, info, instance, cleaned_input, new_instance):
@@ -277,11 +277,11 @@ class DraftOrderComplete(BaseMutation):
         oversold_items = []
         for line in order:
             try:
-                check_stock_quantity(line.variant, country, line.quantity)
-                allocate_stock(line.variant, country, line.quantity)
+                check_stock_quantity(line.variant, country, line.quantity, order.vendor.slug)
+                allocate_stock(line.variant, country, line.quantity, order.vendor.slug)
             except InsufficientStock:
-                available_stock = get_available_quantity(line.variant, country)
-                allocate_stock(line.variant, country, available_stock)
+                available_stock = get_available_quantity(line.variant, country, order.vendor.slug)
+                allocate_stock(line.variant, country, available_stock, order.vendor.slug)
                 oversold_items.append(str(line))
         order_created(order, user=info.context.user, from_draft=True)
 
